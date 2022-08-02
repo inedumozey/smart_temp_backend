@@ -14,7 +14,9 @@ const errorResponder = require('./error/catchAll')
 const app = express();
 const server = http.createServer(app)
 
-const URL = process.env.MONGO_URuL ||  `mongodb://localhost:27017/smartEarners`
+
+
+const URL = process.env.MONGO_URL ||  `mongodb://localhost:27017/smartEarners`
 // const URL = `mongodb+srv://smartearn:12345@cluster0.ygoru8l.mongodb.net/?retryWrites=true&w=majority`
 
 mongoose.connect(URL, {
