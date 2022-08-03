@@ -6,7 +6,9 @@ const route = express.Router()
 
 route.post("/deposit", verifiedUserAuth, deposit.deposit);
 route.post("/payment-handler", deposit.depositWebhook);
-route.post("/manual-resolve", deposit.manualResolve);
+route.get("/deposit/get-all", adminAuth, deposit.getAllDeposits);
+// route.get("/deposit/get/:id", adminAuth, deposit.getDeposit);
+route.put("/deposit/resolve:/id", adminAuth, deposit.resolve);
 
 
 module.exports = route

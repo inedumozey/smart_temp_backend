@@ -16,7 +16,9 @@ const server = http.createServer(app)
 
 const PRODUCTION = Boolean(process.env.PRODUCTION)
 
-const URL =  PRODUCTION ? process.env.MONGO_URL : process.env.MONGO_URL_DEV
+// const URL =  PRODUCTION ? process.env.MONGO_URL : process.env.MONGO_URL_DEV
+// const URL = process.env.MONGO_URL_DEV
+const URL = process.env.MONGO_URL
 
 mongoose.connect(URL, {
     useNewUrlParser: true,

@@ -18,7 +18,7 @@ const WEBHOOK_SECRET_DEV = "6367d535-8dce-4eea-993f-20bfd23cbfbd"
 const API_KEY = "a32d3733-a940-4786-b667-e8798d231eb2";
 const WEBHOOK_SECRET = "3826984f-7d24-4535-a68f-d63ce6af6ffb"
 
-Client.init(PRODUCTION ? API_KEY : API_KEY_DEV);
+Client.init(API_KEY_DEV);
 const {Charge} = resources;
 
 const window = new JSDOM('').window;
@@ -144,13 +144,11 @@ module.exports ={
             
             const rawBody = req.rawBody;
             const signature = req.headers['x-cc-webhook-signature'];
-            const webhookSecret = PRODUCTION ? WEBHOOK_SECRET : WEBHOOK_SECRET_DEV
+            const webhookSecret = WEBHOOK_SECRET_DEV
             const event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
 
              // get the deposit database
              const depositHx = await Deposit.findOne({code: event.data.code})
-
-             console.log( event.data.code, depositHx )
 
             // charge canceled
             if(event.type === 'charge:failed' && !event.data.payments[0] && depositHx.status === 'charge-created'){
@@ -182,6 +180,8 @@ module.exports ={
                     comment: 'pending',
                     status: 'pending'
                 }});
+
+                console.log("pending")
 
             }
 
@@ -223,6 +223,8 @@ module.exports ={
                 await Transactions.findOneAndUpdate({transactionId: txn._i}, {$set: {
                     resolved: true
                 }});
+
+                console.log("confirmed")
 
             }
 
@@ -322,7 +324,20 @@ module.exports ={
         }
     },
 
-    manualResolve: async (req, res)=> {
+    getAllDeposits: async (req, res)=> {
+        try{
+            
+            const txn = await Deposit.find({})
+            // send the redirect to the client
+            return res.status(200).json({ status: true, msg: 'successful', data: txn})
+
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.response.data})
+        }
+    },
+
+    resolve: async (req, res)=> {
         try{
             const {id} = req.params;
 
