@@ -14,9 +14,6 @@ const errorResponder = require('./error/catchAll')
 const app = express();
 const server = http.createServer(app)
 
-const PRODUCTION = Boolean(process.env.PRODUCTION)
-
-// const URL =  PRODUCTION ? process.env.MONGO_URL : process.env.MONGO_URL_DEV
 // const URL = process.env.MONGO_URL_DEV
 const URL = process.env.MONGO_URL
 
@@ -51,7 +48,7 @@ app.use(morgan('combined', { stream: winston.stream }));
 
 // cross-origin request
 var corsOptions = {
-    origin: process.env.FRONTEND_BASE_URL,
+    origin: process.env.ENV==='dev' ? process.env.FRONTEND_BASE_URL_DEV : process.env.FRONTEND_BASE_URL,
     credentials: true
 };
 app.use(cors(corsOptions))
@@ -111,3 +108,4 @@ server.listen(PORT, (err)=>{
 })
 
 // connect websocket using
+

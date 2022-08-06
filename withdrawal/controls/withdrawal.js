@@ -123,7 +123,10 @@ module.exports ={
                     amount: data.amount.toFixed(8),
                     status: 'pending',
                     currency,
+                    walletAddress: data.walletAddress,
+                    coin: data.coin,
                     userId,
+                    convertedAmount,
                     transactionId: newData._id
                 })
                 await NewTransactionHx.save()

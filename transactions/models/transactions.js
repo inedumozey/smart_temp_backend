@@ -32,19 +32,18 @@ const schema = new mongoose.Schema(
         nativeAmountReceived: {
             type: Number
         },
+        convertedAmount: {
+            type: Number
+        },
         currency: {
             type: String,
             default: 'SEC'
         },
-        overPaymentThreshold: {
-            type: Number,
+        overPaidBy: {
+            type: Number
         },
-        underPaymentThreshold: {
-            type: Number,
-        },
-        amountResolved: {
-            type: Number,
-            default: null
+        underPaidBy: {
+            type: Number
         },
         status: {
             type: String,
@@ -53,11 +52,11 @@ const schema = new mongoose.Schema(
             type: ObjectId,
             ref: 'User'
         },
-        receiver: {
+        sender: {
             type: ObjectId,
             ref: 'User'
         },
-        referreeId: {
+        receiver: {
             type: ObjectId,
             ref: 'User'
         },
@@ -66,8 +65,14 @@ const schema = new mongoose.Schema(
         },
         comment: {
             type: String,
-            default: 'created'
+        },
+        walletAddress: {
+            type: String,
+        },
+        coin: {
+            type: String,
         }
+
     },
     {
         timestamps: true

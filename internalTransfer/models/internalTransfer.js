@@ -3,17 +3,16 @@ const {ObjectId} = mongoose.Schema.Types
 
 const schema = new mongoose.Schema(
     {
-        senderId: {
+        sender: {
             type: ObjectId,
             ref: 'User'
         },
-        receiverId: {
+        receiver: {
             type: ObjectId,
             ref: 'User'
         },
         status: {
-            type: Boolean,
-            default: false
+            type: String
         },
         accountNumber: {
             type: String

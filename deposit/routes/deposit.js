@@ -8,7 +8,7 @@ route.post("/deposit", verifiedUserAuth, deposit.deposit);
 route.post("/payment-handler", deposit.depositWebhook);
 route.get("/deposit/get-all", adminAuth, deposit.getAllDeposits);
 // route.get("/deposit/get/:id", adminAuth, deposit.getDeposit);
-route.put("/deposit/resolve:/id", adminAuth, deposit.resolve);
+route.put("/deposit/resolve/:id", adminAuth, deposit.resolve);
 
 
 module.exports = route

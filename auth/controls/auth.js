@@ -24,84 +24,84 @@ const DOMPurify = createDOMPurify(window)
 
 module.exports = {
  
-    authorize: async(req, res)=>{
-        try{
-            //refresh token passed in req.body from client is used to refresh access token which will then be saved in client token
-            const authToken = req.headers["authorization"];   
+    // authorize: async(req, res)=>{
+    //     try{
+    //         //refresh token passed in req.body from client is used to refresh access token which will then be saved in client token
+    //         const authToken = req.headers["authorization"];   
             
-            const setCookie =(status, type, msg)=>{
-                res.cookie("status", status, {httpOnly: false, secure: false});
-                res.cookie("type", type, {httpOnly: false, secure: false});
-            }
+    //         const setCookie =(status, type, msg)=>{
+    //             res.cookie("status", status, {httpOnly: false, secure: false});
+    //             res.cookie("type", type, {httpOnly: false, secure: false});
+    //         }
                        
-            if(!authToken){
-                setCookie(false, 'none')
-                return res.status(200).json({status: false, type: 'none', msg: "You are not authorized, please login or register"})
-            }
+    //         if(!authToken){
+    //             setCookie(false, 'none')
+    //             return res.status(200).json({status: false, type: 'none', msg: "You are not authorized, please login or register"})
+    //         }
 
-            // Verify token
-            const token =authToken.split(" ")[1]
+    //         // Verify token
+    //         const token =authToken.split(" ")[1]
             
-            if(!token){
-                setCookie(false, 'none')
-                return res.status(200).json({status: true, type: 'none', msg: "You not authorized! Please login or register"});
-            }
+    //         if(!token){
+    //             setCookie(false, 'none')
+    //             return res.status(200).json({status: true, type: 'none', msg: "You not authorized! Please login or register"});
+    //         }
 
-            //validate token
-            const data = await jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    //         //validate token
+    //         const data = await jwt.verify(token, process.env.JWT_ACCESS_SECRET);
                 
-            if(!data){
-                setCookie(false, 'none');
-                return res.status(200).json({status: true, type: 'none', msg: "Invalid token! Please login or register"});
-            }
+    //         if(!data){
+    //             setCookie(false, 'none');
+    //             return res.status(200).json({status: true, type: 'none', msg: "Invalid token! Please login or register"});
+    //         }
            
-            // find the user
-            const user = await User.findOne({_id: data.id});
+    //         // find the user
+    //         const user = await User.findOne({_id: data.id});
 
-            if(!user){
-                setCookie(false, 'none')
-                return res.status(200).json({status: true,  type: 'none', msg:  "You not authorized! Please login or register"})
-            }
+    //         if(!user){
+    //             setCookie(false, 'none')
+    //             return res.status(200).json({status: true,  type: 'none', msg:  "You not authorized! Please login or register"})
+    //         }
 
-            //check if user is blocked
-            if(user.isBlocked){
-                setCookie(true, 'blocked')
-                return res.status(200).json({status: true, type: 'blocked', msg: "You account is blocked, please contact customer suuport"})
-            }
+    //         //check if user is blocked
+    //         if(user.isBlocked){
+    //             setCookie(true, 'blocked')
+    //             return res.status(200).json({status: true, type: 'blocked', msg: "You account is blocked, please contact customer suuport"})
+    //         }
 
-            //check if user is unverified and not blocked
-            if(!user.isVerified && !user.isBlocked){
-                setCookie(true, 'unverirified')
-                return res.status(200).json({status: true, type: 'unverirified', msg: "You account is not verified"})
-            }
+    //         //check if user is unverified and not blocked
+    //         if(!user.isVerified && !user.isBlocked){
+    //             setCookie(true, 'unverirified')
+    //             return res.status(200).json({status: true, type: 'unverirified', msg: "You account is not verified"})
+    //         }
 
-            //check if user is verified and not blocked
-            if(user.isVerified && !user.isAdmin && !user.isBlocked){
-                setCookie(true, 'verirified')
-                return res.status(200).json({status: true, type: 'verirified', msg: "Access granted"})
-            }
+    //         //check if user is verified and not blocked
+    //         if(user.isVerified && !user.isAdmin && !user.isBlocked){
+    //             setCookie(true, 'verirified')
+    //             return res.status(200).json({status: true, type: 'verirified', msg: "Access granted"})
+    //         }
 
-            //check if user is an admin and not blocked
-            if(user.isVerified && user.isAdmin && !user.isBlocked){
-                setCookie(true, 'admin')
-                return res.status(200).json({status: true, type: 'admin', msg: ""})
-            }
-            //otherwise
-            else{
-                setCookie(false, 'none')
-                return res.status(200).json({status: true, type: 'none', msg: "User not authenticated! Please login or register"})
-            }
-        }
+    //         //check if user is an admin and not blocked
+    //         if(user.isVerified && user.isAdmin && !user.isBlocked){
+    //             setCookie(true, 'admin')
+    //             return res.status(200).json({status: true, type: 'admin', msg: ""})
+    //         }
+    //         //otherwise
+    //         else{
+    //             setCookie(false, 'none')
+    //             return res.status(200).json({status: true, type: 'none', msg: "User not authenticated! Please login or register"})
+    //         }
+    //     }
 
-        catch(err){
-            if(err.message == 'invalid signature' || err.message == 'invalid token' || err.message === 'jwt malformed' || err.message === "jwt expired"){
-                return res.status(402).json({status: false, type: 'none', msg: "You are not authorized! Please login or register"})
-            }
-            setCookie(false, 'none');
+    //     catch(err){
+    //         if(err.message == 'invalid signature' || err.message == 'invalid token' || err.message === 'jwt malformed' || err.message === "jwt expired"){
+    //             return res.status(402).json({status: false, type: 'none', msg: "You are not authorized! Please login or register"})
+    //         }
+    //         setCookie(false, 'none');
 
-            return res.status(500).json({status: false, msg: "Server error, please contact customer support"});
-        }
-    },
+    //         return res.status(500).json({status: false, msg: "Server error, please contact customer support"});
+    //     }
+    // },
 
     getUsers: async (req, res)=> {
         try{
@@ -161,6 +161,8 @@ module.exports = {
                 username: DOMPurify.sanitize(req.body.username),
                 email: DOMPurify.sanitize(req.body.email),
             }
+
+
 
             const { email, username, password, cpassword } = data;
             
@@ -351,8 +353,7 @@ module.exports = {
     generateAccesstoken: async(req, res)=>{
         try{
             //refresh token passed in req.body from client is used to refresh access token which will then be saved in client token
-            const authToken = req.headers["authorization"];    
-           
+            const authToken = req.headers["authorization"];            
           
             if(!authToken){
                 return res.status(400).json({status: false, message: "You are not authorize, please login or register"})

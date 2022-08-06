@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const InvestmentPlan = mongoose.model("InvestmentPlan");
 const Investment = mongoose.model("Investment");
-const Transactions = mongoose.model("Transactions");
 const ReferralBonus = mongoose.model("ReferralBonus");
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
@@ -264,7 +263,7 @@ module.exports ={
 
             const referralBonusPercentageForMasterPlan = config && config.length >= 1 && config[0].referralBonusPercentageForMasterPlan? Number(config[0].referralBonusPercentageForMasterPlan) : Number(process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER);
 
-            const referralBonusMaxCountForMasterPlan = PRODUCTION ? (config && config.length >= 1 && config[0].referralBonusMaxCountForMasterPlan? Number(config[0].referralBonusMaxCountForMasterPlan) : Number(process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN)) : 3;
+            const referralBonusMaxCountForMasterPlan = (config && config.length >= 1 && config[0].referralBonusMaxCountForMasterPlan? Number(config[0].referralBonusMaxCountForMasterPlan) : Number(process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN))
 
             // get all plans the user has
             const userPlans = await Investment.find({userId}); // array
@@ -341,24 +340,13 @@ module.exports ={
                         const newInvestment = new Investment(newData);
                         await newInvestment.save();
 
-                        // save to Transactions 
-                        const NewTransactionHx = new Transactions({
-                            type: 'invsetment',
-                            amount: data.amount.toFixed(8),
-                            currency,
-                            userId,
-                            status: 'active',
-                            transactionId: newInvestment._id
-                        })
-                        await NewTransactionHx.save()
-
                         // Update the user database by removing this investment plan amount from their total account balance
                         await User.findByIdAndUpdate({_id: userId}, {$set: {
                             amount: (user.amount - data.amount).toFixed(8)
                         }})
     
                         // check user if masterInvestmentCount is between 0 and referralBonusMaxCountForMasterPlan, if true, he can returns the referral bonus to his referrer, then increment the masterInvestmentCount (This is to make sure he only returns the referral bonus to his referrer gfor only referralBonusMaxCountForMasterPlan times of investment)
-                        if(user.masterInvestmentCount >= 0 && user.masterInvestmentCount <= referralBonusMaxCountForMasterPlan){
+                        if(user.masterInvestmentCount >= 0 && user.masterInvestmentCount < referralBonusMaxCountForMasterPlan){
 
                             // check if user was referred by another user, then return their referral bonus to this referrer using their first investment (this is only for the first investment)
                             if(user.referrerId){
@@ -383,28 +371,16 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save();
-
-                                // save to Transactions 
-                                const NewTransactionHx = new Transactions({
-                                    type: 'referral-bonus',
-                                    amount: referralBonus.toFixed(8),
-                                    currency,
-                                    userId: user.referrerId,
-                                    referreeId: userId,
-                                    status: 'successful',
-                                    transactionId: newReferralBonus._id
-                                })
-                                await NewTransactionHx.save()
                             }
+
+                            // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
+                            await User.findByIdAndUpdate({_id: userId}, {
+                                $set: {
+                                    hasInvested: true,
+                                    masterInvestmentCount: user.masterInvestmentCount + 1
+                                }
+                            })
                         }
-
-                        // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
-                        await User.findByIdAndUpdate({_id: userId}, {
-                            $set: {
-                                hasInvested: true,
-                                masterInvestmentCount: user.masterInvestmentCount + 1
-                            }
-                        })
                               
                         const investmentData =  await Investment.findOne({_id: newInvestment.id})
 
@@ -440,16 +416,6 @@ module.exports ={
                         const newInvestment = new Investment(newData);
                         await newInvestment.save();
                         
-                        // save to Transactions 
-                        const NewTransactionHx = new Transactions({
-                            type: 'invsetment',
-                            amount: plan.amount.toFixed(8),
-                            currency,
-                            userId,
-                            status: 'active',
-                            transactionId: newData._id
-                        })
-                        await NewTransactionHx.save()
                                                 
                         // Update the user database by removing this investment plan amount from their total account balance
                         await User.findByIdAndUpdate({_id: userId}, {$set: {
@@ -481,24 +447,23 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save()
-
-                                // save to Transactions 
-                                const NewTransactionHx = new Transactions({
-                                    type: 'referral-bonus',
-                                    amount: referralBonus.toFixed(8),
-                                    currency,
-                                    userId: user.referrerId,
-                                    referreeId: userId,
-                                    status: 'successful',
-                                    transactionId: newReferralBonus._id
-                                })
-                                await NewTransactionHx.save()
                             }
 
                             // update referree user and change hasInvested to true
                             await User.findByIdAndUpdate({_id: userId}, {
                                 $set: {hasInvested: true}
                             })
+
+                            // if user has not invested for master prior invseting for non master, luck his chance of returning the master plan referral bonus to the referral
+                            if(user.masterInvestmentCount === 0){
+
+                                // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
+                                await User.findByIdAndUpdate({_id: userId}, {
+                                    $set: {
+                                        masterInvestmentCount: referralBonusMaxCountForMasterPlan
+                                    }
+                                })
+                            }
                         }
                         
                         const investmentData = await Investment.findOne({_id: newInvestment.id});
@@ -564,11 +529,6 @@ module.exports ={
                         isActive: false
                     }}, {new: true})
                     
-                    
-                    // // find and update transaction hx the transactionId
-                    // await Transactions.updateMany({transactionId: maturedInvestment.id}, {$set: {
-                    //     status: 'matured'
-                    // }});
                 }
 
                 return res.status(200).json({ status: true, msg: "successful"})  

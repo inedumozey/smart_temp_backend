@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const InternalTransfer = mongoose.model("InternalTransfer");
-const Transactions = mongoose.model("Transactions");
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
 require("dotenv").config();
@@ -180,35 +179,22 @@ module.exports ={
             // 3 save data into internal transfer database (transaction) of the sender            
 
             const newInternalTransfer = new InternalTransfer({
-                senderId: userId,
-                receiverId: rUser.id,
+                sender: userId,
+                receiver: rUser.id,
                 accountNumber: data.accountNumber,
                 amount: data.amount.toFixed(8),
                 currency,
-                status: true
+                status: "successful"
             })
 
-            const newInternalTransfer_ = await newInternalTransfer.save();
-        
-            // 4 save to Transactions 
-            const NewTransactionHx = new Transactions({
-                type: 'transfer',
-                amount: data.amount.toFixed(8),
-                currency,
-                userId: userId,
-                status: 'successful',
-                receiver: rUser.id,
-                transactionId: newInternalTransfer_._id
-            })
-            await NewTransactionHx.save()
-            
+            const newInternalTransfer_ = await newInternalTransfer.save();           
 
-            const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'senderId', select: ['_id', 'username', 'email']}).populate({path: 'receiverId', select: ['_id', 'username', 'email']});
+            const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']});
 
             return res.status(200).json({ status: true, msg: `Transaction successful`, data: data_}) 
         }
         catch(err){
-            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+            return res.status(500).json({ status: false, msg: err.message})
         }
     },
 
@@ -216,33 +202,34 @@ module.exports ={
         try{
             const userId = req.user;
 
-            // get the transaction hx
-            const txns = await InternalTransfer.find({});
-
             // get the loggeduser to check if he is the admin
             const loggeduser = await User.findOne({_id: userId})
             
             // if admin, send all the txns
             if(loggeduser.isAdmin){
-                const txnsData = await InternalTransfer.find({}).populate({path: 'senderId', select: ['_id', 'username', 'email']}).populate({path: 'receiverId', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
+                const txnsData = await InternalTransfer.find({}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
 
                 return res.status(200).send({status: true, msg: 'Successful', data: txnsData})
             }
 
             else{
 
-                // check if non admin loggedUser is the sender or receiver, then send only his tnxs
-                let ids = []
-                for(let txn of txns){
-                    if(txn.senderId.toString() === userId.toString() || txn.receiverId.toString() === userId.toString()){
-                        ids.push(txn._id)
-                    }
-                }
-
-                const txnsData = await InternalTransfer.find({_id: ids}).populate({path: 'senderId', select: ['_id', 'username', 'email']}).populate({path: 'receiverId', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
-
-                return res.status(200).send({status: true, msg: 'Successful', data: txnsData})
+                return res.status(400).send({status: false, msg: 'Access denied'})
             }
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+        }
+    },
+
+    getAllTransactions_user: async (req, res)=> {
+        try{
+            const userId = req.user;
+
+            const txnsData = await InternalTransfer.find({$or: [{sender: userId}, {feceiver: userId}]}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
+
+            return res.status(200).send({status: true, msg: 'Successful', data: txnsData, id: userId})
+            
         }
         catch(err){
             return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
@@ -270,7 +257,7 @@ module.exports ={
             
             // check if loggeduser was the one that did the transfer he requets for or the admin
             if(txn.senderId.toString() === userId.toString() || txn.receiverId.toString() === userId.toString() || loggeduser.isAdmin){
-                const txnData = await InternalTransfer.findOne({_id: id}).populate({path: 'senderId', select: ['_id', 'username', 'email']}).populate({path: 'receiverId', select: ['_id', 'username', 'email']})
+                const txnData = await InternalTransfer.findOne({_id: id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']})
 
                 return res.status(200).send({status: true, msg: 'Successful', data: txnData})
             }

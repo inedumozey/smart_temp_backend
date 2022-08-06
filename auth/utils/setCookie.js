@@ -1,9 +1,17 @@
 require('dotenv').config()
+const ENV = process.env.ENV
 
-const setCookie_ =(status, type, msg, res)=>{
-    res.cookie("status", status, {httpOnly: false, secure: false});
-    res.cookie("type", type, {httpOnly: false, secure: false});
-    res.cookie("msg", msg, {httpOnly: false, secure: false});
+const setCookie_ =(type, status, res)=>{
+
+    res.cookie("status", status, {
+        secure: ENV === 'dev' ? false : true,
+        maxAge: Number(process.env.COOKIE_REFRESHTOKEN_DURATION),
+    });
+
+    res.cookie("type", type, {
+        secure: ENV === 'dev' ? false : true,
+        maxAge: Number(process.env.COOKIE_REFRESHTOKEN_DURATION),
+    });
 }
 
 
@@ -13,33 +21,26 @@ function setCookie(accesstoken, refreshtoken, res, user){
     res.cookie("accesstoken", accesstoken, {
         httpOnly: false,
         maxAge: Number(process.env.COOKIE_ACCESSTOKEN_DURATION),
-        secure: false
+        secure: ENV === 'dev' ? false : true,
     });
 
     res.cookie("refreshtoken", refreshtoken, {
         httpOnly: false,
         maxAge: Number(process.env.COOKIE_REFRESHTOKEN_DURATION),
-        secure: false
+        secure: ENV === 'dev' ? false : true,
     });
 
     //check if user is blocked
     if(user.isBlocked){
-        setCookie_(true, 'blocked', "You account is blocked, please contact customer suuport", res)
-    }
+        user.isAdmin ? setCookie_('admin', 'blocked',  res) : setCookie_('user', 'blocked',  res)
 
-    //check if user is unverified and not blocked
-    if(!user.isVerified && !user.isBlocked){
-        setCookie_(true, 'unverirified', "You account is not verified", res);
-    }
+    }else{
+        if(user.isVerified){
+            user.isAdmin ? setCookie_('admin', 'verirified',  res) : setCookie_('user', 'verirified',  res)
 
-    //check if user is verified and not blocked
-    if(user.isVerified && !user.isAdmin && !user.isBlocked){
-        setCookie_(true, 'verirified', "You account is not verified", res);
-    }
-
-    //check if user is an admin and not blocked
-    if(user.isVerified && user.isAdmin && !user.isBlocked){
-        setCookie_(true, 'admin', "You account is not verified", res)
+        }else{
+            user.isAdmin ? setCookie_('admin', 'unverirified',  res) : setCookie_('user', 'unverirified',  res)
+        }
     }
 }
 

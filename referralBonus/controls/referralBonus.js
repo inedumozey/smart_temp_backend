@@ -1,7 +1,6 @@
 const mongoose = require('mongoose')
 const User = mongoose.model("User");
 const ReferralBonus = mongoose.model("ReferralBonus");
-const Transactions = mongoose.model("Transactions");
 require("dotenv").config();
 const createDOMPurify = require('dompurify');
 const {JSDOM} = require('jsdom');
@@ -12,36 +11,13 @@ const DOMPurify = createDOMPurify(window)
 module.exports ={
 
     getAllBounuses: async (req, res)=> {
-        try{
-            
+        try{ 
             const userId = req.user;
 
             // get all referralBonus hx
-            const txns = await ReferralBonus.find({});
+            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username']}).sort({createdAt: -1});
 
-            // get the loggeduser to check if he is the admin, then send all referralBonus hx
-            const loggeduser = await User.findOne({_id: userId})
-            
-            if(loggeduser.isAdmin){
-                const txnData = await ReferralBonus.find({}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'hasReturnedReferralBonus', 'hasInvested', 'firstInvestmentPlanValue']}).sort({createdAt: -1});
-
-                return res.status(200).send({status: true, msg: 'Successful', data: txnData})
-            }
-
-            else{
-                // get the referrerId if he is the logged user
-                let ids = []
-                for(let txn of txns){
-                    if(txn.referrerId.toString() === userId.toString()){
-                        ids.push(txn.id)
-                    }
-                }
-
-                const txnData = await ReferralBonus.find({_id: ids}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'hasReturnedReferralBonus', 'hasInvested', 'firstInvestmentPlanValue']}).sort({createdAt: -1});
-
-                return res.status(200).send({status: true, msg: 'Successful', data: txnData})
-            }
-                    
+            return res.status(200).send({status: true, msg: 'Successful', data: txnData})    
         }
         catch(err){
             return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})

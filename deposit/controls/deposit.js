@@ -67,8 +67,8 @@ module.exports ={
                     customer_name: user.username
                 },
 
-                redirect_url: PRODUCTION ? `${DOMAIN}dashboard` : `${DOMAIN_DEV}dashboard`,
-                cancel_url: PRODUCTION ? `${DOMAIN}dashboard` : `${DOMAIN_DEV}dashboard`
+                redirect_url: process.env.ENV !=='dev' ? `${DOMAIN}dashboard` : `${DOMAIN_DEV}dashboard`,
+                cancel_url: process.env.ENV !=='dev' ? `${DOMAIN}dashboard` : `${DOMAIN_DEV}dashboard`
             }
 
             const charge = await Charge.create(chargeData)
@@ -84,6 +84,8 @@ module.exports ={
                 tradeCurrency: charge.pricing.local.currency,
                 nativeAmountExpected,
                 nativeAmountReceived: 0,
+                overPaidBy: 0,
+                underPaidBy: 0,
                 currency, // native currency of the app
                 overPaymentThreshold: charge.payment_threshold.overpayment_relative_threshold,
                 underPaymentThreshold: charge.payment_threshold.underpayment_relative_threshold,
@@ -104,10 +106,13 @@ module.exports ={
                 tradeCurrency: charge.pricing.local.currency,
                 nativeAmountExpected,
                 nativeAmountReceived: 0,
+                overPaidBy: 0,
+                underPaidBy: 0,
                 currency, // native currency of the app
                 overPaymentThreshold: charge.payment_threshold.overpayment_relative_threshold,
                 underPaymentThreshold: charge.payment_threshold.underpayment_relative_threshold,
                 status: "charge-created",
+                comment: 'created',
                 amountResolved: null,
                 link: charge.hosted_url,
                 transactionId: newDepositData._id
@@ -122,6 +127,7 @@ module.exports ={
 
             // send the redirect to the client
             return res.status(200).json({ status: true, msg: 'charge created', data: data_})
+           
 
         }
         catch(err){
@@ -147,8 +153,8 @@ module.exports ={
             const webhookSecret = WEBHOOK_SECRET_DEV
             const event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
 
-             // get the deposit database
-             const depositHx = await Deposit.findOne({code: event.data.code})
+            // get the deposit database
+            const depositHx = await Deposit.findOne({code: event.data.code})
 
             // charge canceled
             if(event.type === 'charge:failed' && !event.data.payments[0] && depositHx.status === 'charge-created'){
@@ -180,13 +186,10 @@ module.exports ={
                     comment: 'pending',
                     status: 'pending'
                 }});
-
-                console.log("pending")
-
             }
 
             // charge conmfirmed
-            else if(event.type === 'charge:confirmed' && depositHx.status === 'charge-pending'){
+            else if(event.type === 'charge:confirmed' && (depositHx.status === 'charge-pending' ||  depositHx.status === 'charge-created')){
                 const amountReceived_ = event.data.payments[0].value.crypto.amount;
                 const cryptocurrency = event.data.payments[0].value.crypto.currency;
 
@@ -224,12 +227,10 @@ module.exports ={
                     resolved: true
                 }});
 
-                console.log("confirmed")
-
             }
 
             // charge incorrect payment (overpayment/underpayment)
-            else if((event.type === 'charge:failed' && event.data.payments[0]) && depositHx.status === 'charge-pending'){
+            else if((event.type === 'charge:failed' && event.data.payments[0]) && (depositHx.status === 'charge-pending' || depositHx.status === 'charge-created')){
                 const amountExpected = Number(depositHx.tradeAmountExpected)
                 const amountReceived_ = Number(event.data.payments[0].value.crypto.amount);
                 const cryptocurrency = event.data.payments[0].value.crypto.currency;
@@ -240,7 +241,7 @@ module.exports ={
                 const res = await axios.get(`https://api.coinbase.com/v2/exchange-rates?currency=${cryptocurrency}`);
                 const amountReceived = Number(res.data.data.rates.USD) * Number(amountReceived_);
 
-                const isUnderpaid = (amountReceived < amountExpected) && (amountExpected - amountReceived < underpayment_threshold);
+                // const isUnderpaid = (amountReceived < amountExpected) && (amountExpected - amountReceived < underpayment_threshold);
 
                 const isOverpaid = (amountReceived > amountExpected) && ( amountReceived - amountExpected > (overpayment_threshold - 0.004));
 
@@ -293,13 +294,7 @@ module.exports ={
                 // find and update transaction hx the transactionId
                 // 1. find the particular deposit using the code
                 const txn = await Deposit.findOne({code: event.data.code, resolved: false});
-
-                console.log({
-                    comment: resolveComent(),
-                    overPaidBy: resolveOverPayment(),
-                    underPaidBy: resolveUnderPayment()
-                })
-
+                
                 await Transactions.findOneAndUpdate({transactionId: txn._id}, {$set: {
                     tradeAmountReceived: amountReceive,
                     nativeAmountReceived,
@@ -327,7 +322,7 @@ module.exports ={
     getAllDeposits: async (req, res)=> {
         try{
             
-            const txn = await Deposit.find({})
+            const txn = await Deposit.find({}).populate({path: 'userId', select: ['_id', 'email', 'username']}).sort({updatedAt: -1});
             // send the redirect to the client
             return res.status(200).json({ status: true, msg: 'successful', data: txn})
 
@@ -341,10 +336,47 @@ module.exports ={
         try{
             const {id} = req.params;
 
-            // get the transaction from Deposit database
-            const tnx = await Deposit.findOne({_id: id});
+            const data = {
+                amount: Number(DOMPurify.sanitize(req.body.amount)),
+            }
 
-            // check if status is ch
+            if(!data.amount){
+                return res.status(400).json({ status: false, msg: 'The field is required'})
+            }
+            else{
+                const convertedAmount = await conversionRate.USD_TO_SEC(data.amount)
+
+                // find the deposit hx
+                const txn = await Deposit.findOne({_id: id})
+
+                if(txn.status === 'charge-confirmed'){
+                    return res.status(400).json({ status: false, msg: 'This transaction is alread successful'})
+                }
+                else{
+                    //find and update transaction in deposit and transaction hx
+                    const newData = await Deposit.findOneAndUpdate({_id: id}, {$set: {
+                        comment: 'Manual',
+                        status: 'charge-confirmed',
+                        nativeAmountReceived: convertedAmount.toFixed(8),
+                        tradeAmountReceived: data.amount.toFixed(8)
+                    }}, {new: true})
+
+                    await Transactions.findOneAndUpdate({transactionId: id}, {$set: {
+                        comment: 'Manual',
+                        status: 'successful',
+                        nativeAmountReceived: convertedAmount.toFixed(8),
+                        tradeAmountReceived: data.amount.toFixed(8)
+                    }});
+
+                    // find the user and update his/her acount balance
+                    const user = await User.findOne({_id: newData.userId})
+                    await User.findOneAndUpdate({_id: newData.userId}, {$set: {
+                        amount: (user.amount + convertedAmount).toFixed(8)
+                    }})
+
+                    return res.status(200).json({ status: true, msg: 'successfu', data: newData})
+                }
+            }
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})

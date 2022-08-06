@@ -4,7 +4,7 @@ const { userAuth, adminAuth, userAuthProfile, priAdminAuth } = require("../middl
 
 const route = express.Router()
 
-route.get("/authorize", authCrtl.authorize);
+// route.get("/authorize", authCrtl.authorize);
 route.get("/get-all-users", adminAuth, authCrtl.getUsers);
 
 route.get("/get-profile", userAuthProfile, authCrtl.getProfile);

@@ -1,11 +1,12 @@
 const express = require("express")
 const internalTransfer = require('../controls/internalTransfer')
-const { adminAuth, verifiedUserAuth } = require("../../auth/middlewares/auth")
+const { adminAuth, verifiedUserAuth, userAuthProfile } = require("../../auth/middlewares/auth")
 
 const route = express.Router()
 
-route.get("/get-all-transactions", verifiedUserAuth, internalTransfer.getAllTransactions);
-route.get("/get-transaction/:id", verifiedUserAuth, internalTransfer.getTransaction);
+route.get("/get-all-transactions", adminAuth, internalTransfer.getAllTransactions);
+route.get("/get-all-transactions-user", userAuthProfile, internalTransfer.getAllTransactions_user);
+route.get("/get-transaction/:id", userAuthProfile, internalTransfer.getTransaction);
 route.post("/check-user", verifiedUserAuth, internalTransfer.checkUser);
 route.post("/pay-user", verifiedUserAuth, internalTransfer.payUser);
 
