@@ -60,6 +60,9 @@ const schema = new mongoose.Schema(
             type: ObjectId,
             ref: 'User'
         },
+        accountNumber: {
+            type: Number
+        },
         transactionId: {
             type: String,
         },
@@ -72,7 +75,6 @@ const schema = new mongoose.Schema(
         coin: {
             type: String,
         }
-
     },
     {
         timestamps: true

@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const InternalTransfer = mongoose.model("InternalTransfer");
 const User = mongoose.model("User");
+const Transactions = mongoose.model("Transactions");
 const Config = mongoose.model("Config");
 require("dotenv").config();
 const createDOMPurify = require('dompurify');
@@ -187,7 +188,21 @@ module.exports ={
                 status: "successful"
             })
 
-            const newInternalTransfer_ = await newInternalTransfer.save();           
+            const newInternalTransfer_ = await newInternalTransfer.save();
+            
+            //save to transaction hx database
+            const NewTransactionHx = new Transactions({
+                type: 'transfer',
+                sender: userId,
+                receiver: rUser.id,
+                accountNumber: data.accountNumber,
+                amount: data.amount.toFixed(8),
+                currency,
+                status: "successful",
+                transactionId: newInternalTransfer_._id
+            })
+
+            await NewTransactionHx.save();
 
             const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']});
 
@@ -207,7 +222,7 @@ module.exports ={
             
             // if admin, send all the txns
             if(loggeduser.isAdmin){
-                const txnsData = await InternalTransfer.find({}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
+                const txnsData = await InternalTransfer.find({}).populate({path: 'sender', select: ['_id', 'username', 'accountNumber', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'accountNumber', 'email']}).sort({createdAt: -1});
 
                 return res.status(200).send({status: true, msg: 'Successful', data: txnsData})
             }
@@ -226,7 +241,7 @@ module.exports ={
         try{
             const userId = req.user;
 
-            const txnsData = await InternalTransfer.find({$or: [{sender: userId}, {feceiver: userId}]}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']}).sort({createdAt: -1});
+            const txnsData = await InternalTransfer.find({$or: [{sender: userId}, {receiver: userId}]}).populate({path: 'sender', select: ['_id', 'username', 'accountNumber', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'accountNumber', 'email']}).sort({createdAt: -1});
 
             return res.status(200).send({status: true, msg: 'Successful', data: txnsData, id: userId})
             

@@ -1,7 +1,5 @@
 const mongoose = require('mongoose')
-const ReferralBonus = mongoose.model("ReferralBonus");
 const Transactions = mongoose.model("Transactions");
-require("dotenv").config();
 
 module.exports ={
 
@@ -11,7 +9,7 @@ module.exports ={
             const userId = req.user;
 
             // get all txn hx
-            const txns = await Transactions.find({userId}).sort({createdAt: -1})
+            const txns = await Transactions.find({$or: [{userId}, {sender: userId}, {receiver: userId}]}).populate({path: 'sender', select: ['_id', 'username', 'accountNumber', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'accountNumber', 'email']}).sort({createdAt: -1});
 
             return res.status(200).json({ status: true, msg: "Successful", data: txns, id: userId})
 
