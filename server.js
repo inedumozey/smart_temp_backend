@@ -44,7 +44,8 @@ app.use(express.urlencoded({ extended: false}));
 app.use(cookieParser())
 
 // logger
-app.use(morgan('combined', { stream: winston.stream }));
+app.use(morgan());
+// app.use(morgan('combined', { stream: winston.stream }));
 
 // cross-origin request
 var corsOptions = {
