@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const InvestmentPlan = mongoose.model("InvestmentPlan");
 const Investment = mongoose.model("Investment");
 const ReferralBonus = mongoose.model("ReferralBonus");
+const ReferralTotalBonus = mongoose.model("ReferralTotalBonus");
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
 require("dotenv").config();
@@ -372,6 +373,29 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save();
+
+                                 // save new collection in the referralTotalBonus database
+                                 // check if referreeId alreay exist, then update the bonus, otherwise save new document
+                                 const oldReferree = await ReferralTotalBonus.findOne({referreeId: userId})
+                                 
+                                 if(oldReferree){
+                                    //update the amount
+                                    await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
+                                        amount: oldReferree.amount + referralBonus
+                                    }})
+                                 }
+                                 else{
+                                    // save new document
+                                    // save new collection in the referralBonus database
+                                    const newReferralTotalBonus = new ReferralTotalBonus({
+                                        referrerId: user.referrerId,
+                                        referreeId: userId,
+                                        amount: referralBonus.toFixed(8),
+                                        currency
+                                    })
+                                    await newReferralTotalBonus.save()
+
+                                 }
                             }
 
                             // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
@@ -436,11 +460,13 @@ module.exports ={
                                 // calculate the referalBonus
                                 const referralBonus = referralBonusPercentage / 100 * plan.amount;
 
-                                // update the referrer account balance with this referralBonus
+                                
+
+                                // // update the referrer account balance with this referralBonus
                                 await User.findByIdAndUpdate({_id: user.referrerId}, {
                                     $set: {amount: (referrerUser.amount + referralBonus).toFixed(8)}
                                 })
-
+                                
                                 // save new collection in the referralBonus database
                                 const newReferralBonus = new ReferralBonus({
                                     referrerId: user.referrerId,
@@ -449,14 +475,39 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save()
+
+                                 // save new collection in the referralTotalBonus database
+                                 // check if referreeId alreay exist, then update the bonus, otherwise save new document
+                                 const oldReferree = await ReferralTotalBonus.findOne({referreeId: userId})
+                                 
+                                 if(oldReferree){
+                                    //update the amount
+                                    await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
+                                        amount: oldReferree.amount + referralBonus
+                                    }})
+                                 }
+                                 else{
+                                    // save new document
+                                    // save new collection in the referralBonus database
+                                    const newReferralTotalBonus = new ReferralTotalBonus({
+                                        referrerId: user.referrerId,
+                                        referreeId: userId,
+                                        amount: referralBonus.toFixed(8),
+                                        currency
+                                    })
+                                    await newReferralTotalBonus.save()
+
+                                 }
                             }
+
+                            
 
                             // update referree user and change hasInvested to true
                             await User.findByIdAndUpdate({_id: userId}, {
                                 $set: {hasInvested: true}
                             })
 
-                            // if user has not invested for master prior invseting for non master, luck his chance of returning the master plan referral bonus to the referral
+                            // if user has not invested for master prior invseting for non master, lock his chance of returning the master plan referral bonus to the referral
                             if(user.masterInvestmentCount === 0){
 
                                 // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
@@ -522,7 +573,6 @@ module.exports ={
 
                     if(users.active == 1 || users.active ==2){
                         // update the users account with the amount he invested with and the rewards
-                        console.log(users.active)
                         await User.updateMany({_id: userId}, {$set: {
                             active: users.active - 1,
                             amount: (users.amount + maturedInvestment.rewards).toFixed(8)

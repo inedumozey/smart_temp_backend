@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const User = mongoose.model("User");
 const ReferralBonus = mongoose.model("ReferralBonus");
+const ReferralTotalBonus = mongoose.model("ReferralTotalBonus");
 require("dotenv").config();
 const createDOMPurify = require('dompurify');
 const {JSDOM} = require('jsdom');
@@ -15,7 +16,7 @@ module.exports ={
             const userId = req.user;
 
             // get all referralBonus hx
-            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'active']}).sort({createdAt: -1});
+            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'active', 'hasInvested', 'masterInvestmentCount']}).sort({createdAt: -1});
 
             return res.status(200).send({status: true, msg: 'Successful', data: txnData})    
         }
@@ -23,6 +24,37 @@ module.exports ={
             return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
         }
     },
+
+    getAllTotalBounuses: async (req, res)=> {
+        try{ 
+            const userId = req.user;
+
+            // get all referralBonus hx
+            const txnData = await ReferralTotalBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'active', 'hasInvested', 'masterInvestmentCount']}).sort({createdAt: -1});
+
+            return res.status(200).send({status: true, msg: 'Successful', data: txnData})    
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+        }
+    },
+
+    contest: async (req, res)=> {
+        try{ 
+            const userId = req.user;
+
+            // get all referralBonus hx
+            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'active', 'hasInvested', 'masterInvestmentCount']}).sort({createdAt: -1});
+
+            
+
+            return res.status(200).send({status: true, msg: 'Successful', data: txnData})    
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+        }
+    },
+
 
     getBounus: async (req, res)=> {
         try{

@@ -32,9 +32,13 @@ const schema = new mongoose.Schema(
         },
         totalInvestors: {
             type: Number,
-            default: 0 
+            default: 0
         },
-        totalSecPaid: {
+        totalCoinPaid: {
+            type: Number,
+            default: 0,
+        },
+        totalAvailableCoin: {
             type: Number,
             default: 0,
         },
@@ -45,6 +49,9 @@ const schema = new mongoose.Schema(
         nativeCurrency: {
             type: String,
             default: "SEC"
+        },
+        recentPayout: {
+            type: String,
         },
         tradeCurrency: {
             type: String,
@@ -78,6 +85,10 @@ const schema = new mongoose.Schema(
         referralBonusPercentage: {
             type: Number,
             default: 10
+        },
+        referralContestPercentage: {
+            type: Number,
+            default: 0
         },
         referralBonusPercentageForMasterPlan: {
             type: Number,

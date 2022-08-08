@@ -14,8 +14,8 @@ const errorResponder = require('./error/catchAll')
 const app = express();
 const server = http.createServer(app)
 
-const URL = process.env.MONGO_URL_DEV
-// const URL = process.env.MONGO_URL
+// const URL = process.env.MONGO_URL_DEV
+const URL = process.env.MONGO_URL
 
 mongoose.connect(URL, {
     useNewUrlParser: true,
@@ -65,6 +65,7 @@ require('./internalTransfer/models/internalTransfer')
 require('./investment/models/investmentPlan')
 require('./investment/models/investment')
 require('./referralBonus/models/referralBonus')
+require('./referralBonus/models/ReferralTotalBonus')
 require('./deposit/models/deposit')
 require('./withdrawal/models/withdrawal')
 require('./notifications/models/notification')
@@ -72,16 +73,16 @@ require('./testimonials/models/testimonials')
 require('./transactions/models/transactions')
 
 // routes
-app.use('/api/auth',  require("./auth/routes/auth")); 
-app.use('/api/config',  require('./websiteConfig/routes/config')); 
-app.use('/api/transfer',  require('./internalTransfer/routes/internalTransfer')); 
-app.use('/api/investment',  require('./investment/routes/investment')); 
-app.use('/api/referral-bonus',  require('./referralBonus/routes/referralBonus')); 
-app.use('/api/', require('./deposit/routes/deposit')); 
-app.use('/api/withdrawal',  require('./withdrawal/routes/withdrawal')); 
-app.use('/api/notification',  require('./notifications/routes/notification')); 
-app.use('/api/testimonials',  require('./testimonials/routes/testimonials')); 
-app.use('/api/transactions',  require('./transactions/routes/transactions')); 
+app.use('/auth',  require("./auth/routes/auth")); 
+app.use('/config',  require('./websiteConfig/routes/config')); 
+app.use('/transfer',  require('./internalTransfer/routes/internalTransfer')); 
+app.use('/investment',  require('./investment/routes/investment')); 
+app.use('/referral-bonus',  require('./referralBonus/routes/referralBonus')); 
+app.use(require('./deposit/routes/deposit')); 
+app.use('/withdrawal',  require('./withdrawal/routes/withdrawal')); 
+app.use('/notification',  require('./notifications/routes/notification')); 
+app.use('/testimonials',  require('./testimonials/routes/testimonials')); 
+app.use('/transactions',  require('./transactions/routes/transactions')); 
 
 // Catch all Error Handler
 app.use(errorResponder);

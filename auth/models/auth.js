@@ -69,10 +69,7 @@ const schema = new mongoose.Schema(
             require: true,
             unique: true,
         },
-        referree: [ {
-            type: objectID,
-            ref: 'User'
-        } ],
+        referree: [],
         referrerId: {
             type: objectID,
             ref: 'User',

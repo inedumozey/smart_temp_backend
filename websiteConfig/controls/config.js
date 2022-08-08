@@ -104,7 +104,7 @@ module.exports ={
             const unverifyUserLifeSpan = 0;
             const totalMembers = 0;
             const totalInvestors = 0;
-            const totalSecPaid = 0;
+            const totalCoinPaid = 0;
             const conversionRate = 500;
             const investmentLimits = 2;
             const maxWithdrawalLimit = 100000;
@@ -116,8 +116,11 @@ module.exports ={
             const transferCommonDiff = 1000
             const masterPlanAmountLimit = 200000
             const referralBonusPercentage = 10;
+            const referralContestPercentage = 10;
             const referralBonusMaxCountForMasterPlan = 30
             const referralBonusPercentageForMasterPlan = 0.3
+            const totalAvailableCoin = 0
+            const recentPayout = '02543003107 -> USDT'
             
             const data = {
                 name: req.body.name ? DOMPurify.sanitize(req.body.name) : process.env.COMPANY_NAME ? process.env.COMPANY_NAME : name,
@@ -133,6 +136,8 @@ module.exports ={
                 nativeCurrency: req.body.nativeCurrency ? (DOMPurify.sanitize(req.body.nativeCurrency)).toUpperCase() : process.env.NATIVE_CURRENCY ? (process.env.NATIVE_CURRENCY).toUpperCase() : (nativeCurrency).toUpperCase(),
 
                 tradeCurrency: req.body.tradeCurrency ? (DOMPurify.sanitize(req.body.tradeCurrency)).toUpperCase() : process.env.TRADE_CURRENCY ?  (process.env.TRADE_CURRENCY).toUpperCase() : (tradeCurrency).toUpperCase(),
+
+                recentPayout: req.body.recentPayout ? (DOMPurify.sanitize(req.body.recentPayout)).toUpperCase() : process.env.RECENT_PAYOUT ?  (process.env.RECENT_PAYOUT).toUpperCase() : (recentPayout).toUpperCase(),
 
                 brandColorA: req.body.brandColorA ? DOMPurify.sanitize(req.body.brandColorA) : process.env.BRAND_COLOR_A ? process.env.BRAND_COLOR_A : brandColorA,
 
@@ -154,7 +159,9 @@ module.exports ={
 
                 totalInvestors: req.body.totalInvestors ? Number(DOMPurify.sanitize(req.body.totalInvestors)) : process.env.TOTAL_INVESTORS ? Number(process.env.TOTAL_INVESTORS) : Number(totalInvestors),
 
-                totalSecPaid: req.body.totalSecPaid ? Number(DOMPurify.sanitize(req.body.totalSecPaid)) : process.env.TOTAL_SEC_PAID ? Number(process.env.TOTAL_SEC_PAID) : Number(totalSecPaid),
+                totalAvailableCoin: req.body.totalAvailableCoin ? Number(DOMPurify.sanitize(req.body.totalAvailableCoin)) : process.env.TOTAL_AVAILABLE_COIN ? Number(process.env.TOTAL_AVAILABLE_COIN) : Number(totalAvailableCoin),
+
+                totalCoinPaid: req.body.totalCoinPaid ? Number(DOMPurify.sanitize(req.body.totalCoinPaid)) : process.env.TOTAL_COIN_PAID ? Number(process.env.TOTAL_COIN_PAID) : Number(totalCoinPaid),
 
                 conversionRate: req.body.conversionRate ? Number(DOMPurify.sanitize(req.body.conversionRate)) : process.env.CONVERSION_RATE ? Number(process.env.CONVERSION_RATE) : Number(conversionRate),
 
@@ -163,6 +170,16 @@ module.exports ={
                 masterPlanAmountLimit: req.body.masterPlanAmountLimit ? Number(DOMPurify.sanitize(req.body.masterPlanAmountLimit)) : process.env.MASTER_PLAN_AMOUNT_LIMIT ? Number(process.env.MASTER_PLAN_AMOUNT_LIMIT) : masterPlanAmountLimit,
 
                 referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.REFERRAL_BONUS_PERCENTAGE ? Number(process.env.REFERRAL_BONUS_PERCENTAGE) : Number(referralBonusPercentage),
+
+
+
+                referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.TOTAL_AVAILABLE_COIN ? Number(process.env.TOTAL_AVAILABLE_COIN) : Number(referralBonusPercentage),
+
+                referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.RECENT_PAYOUT ? Number(process.env.RECENT_PAYOUT) : Number(referralBonusPercentage),
+
+
+
+                referralContestPercentage: req.body.referralContestPercentage ? Number(DOMPurify.sanitize(req.body.referralContestPercentage)) : process.env.REFERRAL_CONTEST_PERCENTAGE ? Number(process.env.REFERRAL_CONTEST_PERCENTAGE) : Number(referralContestPercentage),
                 
                 referralBonusPercentageForMasterPlan: req.body.referralBonusPercentageForMasterPlan ? Number(DOMPurify.sanitize(req.body.referralBonusPercentageForMasterPlan)) : process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER ? Number(process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER) : Number(referralBonusPercentageForMasterPlan),
 
@@ -231,12 +248,15 @@ module.exports ={
                 unverifyUserLifeSpan: data.unverifyUserLifeSpan,
                 pendingWithdrawalDuration: data.pendingWithdrawalDuration,
                 totalMembers: data.totalMembers,
+                recentPayout: data.recentPayout,
                 totalInvestors: data.totalInvestors,
-                totalSecPaid: data.totalSecPaid,
+                totalCoinPaid: data.totalCoinPaid,
+                totalAvailableCoin: data.totalAvailableCoin,
                 conversionRate: data.conversionRate,
                 investmentLimits: data.investmentLimits,
                 referralBonusPercentageForMasterPlan: data.referralBonusPercentageForMasterPlan,
                 referralBonusPercentage: data.referralBonusPercentage,
+                referralContestPercentage: data.referralContestPercentage,
                 masterPlanAmountLimit: data.masterPlanAmountLimit,
                 minWithdrawalLimit: data.minWithdrawalLimit,
                 maxWithdrawalLimit: data.maxWithdrawalLimit,
