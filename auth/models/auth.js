@@ -17,6 +17,7 @@ const schema = new mongoose.Schema(
         password: {
             type: String,
             require: true,
+            unique: true,
             trim: true
         },
         avater:{
@@ -66,7 +67,7 @@ const schema = new mongoose.Schema(
         referralCode: {
             type: String,
             require: true,
-            require: true,
+            unique: true,
         },
         referree: [ {
             type: objectID,
@@ -76,6 +77,10 @@ const schema = new mongoose.Schema(
             type: objectID,
             ref: 'User',
             default: null
+        },
+        active:{
+            type: Number,
+            default: 0
         },
         masterInvestmentCount: {
             type: Number,

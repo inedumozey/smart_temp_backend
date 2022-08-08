@@ -342,6 +342,7 @@ module.exports ={
 
                         // Update the user database by removing this investment plan amount from their total account balance
                         await User.findByIdAndUpdate({_id: userId}, {$set: {
+                            active: user.active + 1,
                             amount: (user.amount - data.amount).toFixed(8)
                         }})
     
@@ -419,6 +420,7 @@ module.exports ={
                                                 
                         // Update the user database by removing this investment plan amount from their total account balance
                         await User.findByIdAndUpdate({_id: userId}, {$set: {
+                            active: user.active + 1,
                             amount: (user.amount - plan.amount).toFixed(8),
                         }});
 
@@ -518,16 +520,20 @@ module.exports ={
                     const userId = maturedInvestment.userId.toString();
                     const users = await User.findOne({_id: userId})
 
-                    // update the users account with the amount he invested with and the rewards
-                    await User.updateMany({_id: userId}, {$set: {
-                        amount: (users.amount + maturedInvestment.rewards).toFixed(8)
-                    }}, {new: true})
+                    if(users.active == 1 || users.active ==2){
+                        // update the users account with the amount he invested with and the rewards
+                        console.log(users.active)
+                        await User.updateMany({_id: userId}, {$set: {
+                            active: users.active - 1,
+                            amount: (users.amount + maturedInvestment.rewards).toFixed(8)
+                        }}, {new: true})
 
-                    // update the investment database, 
-                    await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
-                        rewarded: true,
-                        isActive: false
-                    }}, {new: true})
+                        // update the investment database, 
+                        await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
+                            rewarded: true,
+                            isActive: false
+                        }}, {new: true})
+                    }
                     
                 }
 

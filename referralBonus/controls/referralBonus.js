@@ -15,7 +15,7 @@ module.exports ={
             const userId = req.user;
 
             // get all referralBonus hx
-            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username']}).sort({createdAt: -1});
+            const txnData = await ReferralBonus.find({referrerId: userId}).populate({path: 'referreeId', select: ['_id', 'email', 'username', 'active']}).sort({createdAt: -1});
 
             return res.status(200).send({status: true, msg: 'Successful', data: txnData})    
         }
@@ -77,11 +77,6 @@ module.exports ={
 
             // get the referrer user using the refcode
             const referrerUser = await User.findOne({referralCode: data.refcode});
-
-            if(!referrerUser){
-                return res.status(404).json({status: false, msg: "User not found"})
-            }
-
             // check to be sure user has not already been refferred by
             if(loggedUser.referrerId){
                 // get the user that referred him prior
@@ -89,22 +84,27 @@ module.exports ={
 
                 return res.status(400).json({status: false, msg: `You have already been referred by ${priorReferrerUser.username}`})
             }
+
+            else if(!referrerUser){
+                return res.status(404).json({status: false, msg: "User not found"})
+            }
+
+            else if(loggedUser.referrerId === data.refcode.trim()){
+                return res.status(400).json({status: false, msg: `Owner's Referral Code ${priorReferrerUser.username}`})
+            }
             else{
                 // push the loggedUser to the referrerUser's referree list
                 await User.findOneAndUpdate({referralCode: data.refcode}, {$push: {
                     referree: userId
                 }})
 
-                // add the referrerUser to the referrerIdof the loggedUser
-                await User.findOneAndUpdate({_id: userId}, {$set: {
+                // add the referrerUser to the referrerId of the loggedUser
+                const updatedData = await User.findOneAndUpdate({_id: userId}, {$set: {
                     referrerId: referrerUser.id
-                }})
+                }}, {new: true}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referree', select: ['_id', 'email', 'username', 'hasInvested']});
 
-                return res.status(200).json({status: true, msg: `You have been successfully added to the referree list of ${referrerUser.username}`})
-
+                return res.status(200).json({status: true, msg: `You have been successfully added to the referree list of ${referrerUser.username}`, data: updatedData})
             }
-
-            
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})
