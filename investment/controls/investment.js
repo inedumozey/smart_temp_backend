@@ -373,29 +373,14 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save();
-
-                                 // save new collection in the referralTotalBonus database
-                                 // check if referreeId alreay exist, then update the bonus, otherwise save new document
-                                 const oldReferree = await ReferralTotalBonus.findOne({referreeId: userId})
-                                 
-                                 if(oldReferree){
-                                    //update the amount
+                                
+                                //update the referral total bonus collection
+                                const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
+                                if(refData){
                                     await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
-                                        amount: oldReferree.amount + referralBonus
+                                        amount: refData.amount + referralBonus
                                     }})
-                                 }
-                                 else{
-                                    // save new document
-                                    // save new collection in the referralBonus database
-                                    const newReferralTotalBonus = new ReferralTotalBonus({
-                                        referrerId: user.referrerId,
-                                        referreeId: userId,
-                                        amount: referralBonus.toFixed(8),
-                                        currency
-                                    })
-                                    await newReferralTotalBonus.save()
-
-                                 }
+                                }
                             }
 
                             // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
@@ -475,29 +460,15 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save()
-
-                                 // save new collection in the referralTotalBonus database
-                                 // check if referreeId alreay exist, then update the bonus, otherwise save new document
-                                 const oldReferree = await ReferralTotalBonus.findOne({referreeId: userId})
-                                 
-                                 if(oldReferree){
-                                    //update the amount
+                                            
+                                //update the referral total bonus collection
+                                const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
+                                if(refData){
                                     await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
-                                        amount: oldReferree.amount + referralBonus
+                                        amount: refData.amount + referralBonus
                                     }})
-                                 }
-                                 else{
-                                    // save new document
-                                    // save new collection in the referralBonus database
-                                    const newReferralTotalBonus = new ReferralTotalBonus({
-                                        referrerId: user.referrerId,
-                                        referreeId: userId,
-                                        amount: referralBonus.toFixed(8),
-                                        currency
-                                    })
-                                    await newReferralTotalBonus.save()
-
-                                 }
+                                }
+                                
                             }
 
                             

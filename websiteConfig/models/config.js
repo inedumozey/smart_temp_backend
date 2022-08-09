@@ -34,11 +34,7 @@ const schema = new mongoose.Schema(
             type: Number,
             default: 0
         },
-        totalCoinPaid: {
-            type: Number,
-            default: 0,
-        },
-        totalAvailableCoin: {
+        totalSecPaid: {
             type: Number,
             default: 0,
         },
@@ -49,9 +45,6 @@ const schema = new mongoose.Schema(
         nativeCurrency: {
             type: String,
             default: "SEC"
-        },
-        recentPayout: {
-            type: String,
         },
         tradeCurrency: {
             type: String,
@@ -132,6 +125,10 @@ const schema = new mongoose.Schema(
         pendingWithdrawalDuration: {
             type: Number,
             default: 24
+        },
+        movingText: {
+            type: String,
+            default: 'Current Exchange Rate: 500 SEC = 1 USD, Recent Payouts: 02076425027 -> USDT, Total Available Sec: 0 SEC'
         }
     },
     {

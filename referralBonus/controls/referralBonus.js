@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const User = mongoose.model("User");
+const Config = mongoose.model("Config");
 const ReferralBonus = mongoose.model("ReferralBonus");
 const ReferralTotalBonus = mongoose.model("ReferralTotalBonus");
 require("dotenv").config();
@@ -104,6 +105,12 @@ module.exports ={
                 refcode:  DOMPurify.sanitize(req.body.refcode),
             }
 
+            // get currency and verifyEmail from config data if exist otherwise set to the one in env
+            // get all config
+            const config = await Config.find({});
+
+            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+
             // get the logged user
             const loggedUser = await User.findOne({_id: userId});
 
@@ -134,6 +141,16 @@ module.exports ={
                 const updatedData = await User.findOneAndUpdate({_id: userId}, {$set: {
                     referrerId: referrerUser.id
                 }}, {new: true}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referree', select: ['_id', 'email', 'username', 'hasInvested']});
+
+                // create referralBonus collection
+                const newReferralTotalBonus = new ReferralTotalBonus({
+                    referreeId: userId,
+                    referrerId: referrerUser.id,
+                    amount: 0,
+                    currency
+                })
+                await newReferralTotalBonus.save()
+
 
                 return res.status(200).json({status: true, msg: `You have been successfully added to the referree list of ${referrerUser.username}`, data: updatedData})
             }

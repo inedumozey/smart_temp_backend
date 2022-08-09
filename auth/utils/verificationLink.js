@@ -24,6 +24,8 @@ module.exports = async(user, res, refcode)=>{
     const config = await Config.find({});
     let configData;
 
+    const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+
     if( config && config.length >= 1){
         configData = {
             name: config[0].name,
@@ -115,6 +117,15 @@ module.exports = async(user, res, refcode)=>{
                         await User.findByIdAndUpdate({_id: newUser.id}, {$set: {
                             referrerId: referringUser.id
                         }})
+
+                         // create referralBonus collection
+                         const newReferralTotalBonus = new ReferralTotalBonus({
+                            referreeId: newUser._id,
+                            referrerId: referringUser.id,
+                            amount: 0,
+                            currency
+                        })
+                        await newReferralTotalBonus.save()
                     }
                 }
 

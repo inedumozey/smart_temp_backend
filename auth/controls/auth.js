@@ -6,6 +6,7 @@ const User = mongoose.model("User");
 const Config = mongoose.model("Config");
 const ProfileImg = mongoose.model("ProfileImg")
 const PasswordReset = mongoose.model('PasswordReset');
+const ReferralTotalBonus = mongoose.model('ReferralTotalBonus');
 require("dotenv").config();
 
 const bcrypt = require("bcrypt");
@@ -137,7 +138,7 @@ module.exports = {
             const userId = req.user;
 
             //find user by id, or email or username
-            const paramUser = await User.findOne({_id: userId}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referree', select: ['_id', 'email', 'username', 'hasInvested']}).select("-password");
+            const paramUser = await User.findOne({_id: userId}).populate({path: 'referrerId', select: ['_id', 'email', 'username']}).populate({path: 'referree', select: ['_id', 'email', 'username', 'active', 'hasInvested', 'masterInvestmentCount']}).select("-password");
 
             if(!paramUser) res.status(404).json({status: false, msg: `User not found!`});
 
@@ -240,6 +241,15 @@ module.exports = {
                         await User.findByIdAndUpdate({_id: newUser.id}, {$set: {
                             referrerId: referringUser.id
                         }})
+
+                        // create referralBonus collection
+                        const newReferralTotalBonus = new ReferralTotalBonus({
+                            referreeId: newUser._id,
+                            referrerId: referringUser.id,
+                            amount: 0,
+                            currency
+                        })
+                        await newReferralTotalBonus.save()
                     }
                 }
                 

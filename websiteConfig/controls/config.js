@@ -104,7 +104,7 @@ module.exports ={
             const unverifyUserLifeSpan = 0;
             const totalMembers = 0;
             const totalInvestors = 0;
-            const totalCoinPaid = 0;
+            const totalSecPaid = 0;
             const conversionRate = 500;
             const investmentLimits = 2;
             const maxWithdrawalLimit = 100000;
@@ -119,8 +119,7 @@ module.exports ={
             const referralContestPercentage = 10;
             const referralBonusMaxCountForMasterPlan = 30
             const referralBonusPercentageForMasterPlan = 0.3
-            const totalAvailableCoin = 0
-            const recentPayout = '02543003107 -> USDT'
+            const movingText = 'Current Exchange Rate: 500 SEC = 1 USD, Recent Payouts: 02076425027 -> USDT, Total Available Sec: 0 SEC'
             
             const data = {
                 name: req.body.name ? DOMPurify.sanitize(req.body.name) : process.env.COMPANY_NAME ? process.env.COMPANY_NAME : name,
@@ -137,7 +136,7 @@ module.exports ={
 
                 tradeCurrency: req.body.tradeCurrency ? (DOMPurify.sanitize(req.body.tradeCurrency)).toUpperCase() : process.env.TRADE_CURRENCY ?  (process.env.TRADE_CURRENCY).toUpperCase() : (tradeCurrency).toUpperCase(),
 
-                recentPayout: req.body.recentPayout ? (DOMPurify.sanitize(req.body.recentPayout)).toUpperCase() : process.env.RECENT_PAYOUT ?  (process.env.RECENT_PAYOUT).toUpperCase() : (recentPayout).toUpperCase(),
+                movingText: req.body.movingText ? (DOMPurify.sanitize(req.body.movingText)).toUpperCase() : process.env.MOVING_TEXT ?  (process.env.MOVING_TEXT).toUpperCase() : (movingText).toUpperCase(),
 
                 brandColorA: req.body.brandColorA ? DOMPurify.sanitize(req.body.brandColorA) : process.env.BRAND_COLOR_A ? process.env.BRAND_COLOR_A : brandColorA,
 
@@ -161,7 +160,7 @@ module.exports ={
 
                 totalAvailableCoin: req.body.totalAvailableCoin ? Number(DOMPurify.sanitize(req.body.totalAvailableCoin)) : process.env.TOTAL_AVAILABLE_COIN ? Number(process.env.TOTAL_AVAILABLE_COIN) : Number(totalAvailableCoin),
 
-                totalCoinPaid: req.body.totalCoinPaid ? Number(DOMPurify.sanitize(req.body.totalCoinPaid)) : process.env.TOTAL_COIN_PAID ? Number(process.env.TOTAL_COIN_PAID) : Number(totalCoinPaid),
+                totalSecPaid: req.body.totalSecPaid ? Number(DOMPurify.sanitize(req.body.totalSecPaid)) : process.env.TOTAL_SEC_PAID ? Number(process.env.TOTAL_SEC_PAID) : Number(totalSecPaid),
 
                 conversionRate: req.body.conversionRate ? Number(DOMPurify.sanitize(req.body.conversionRate)) : process.env.CONVERSION_RATE ? Number(process.env.CONVERSION_RATE) : Number(conversionRate),
 
@@ -248,10 +247,9 @@ module.exports ={
                 unverifyUserLifeSpan: data.unverifyUserLifeSpan,
                 pendingWithdrawalDuration: data.pendingWithdrawalDuration,
                 totalMembers: data.totalMembers,
-                recentPayout: data.recentPayout,
                 totalInvestors: data.totalInvestors,
-                totalCoinPaid: data.totalCoinPaid,
-                totalAvailableCoin: data.totalAvailableCoin,
+                totalSecPaid: data.totalSecPaid,
+                movingText: dara.movingText, 
                 conversionRate: data.conversionRate,
                 investmentLimits: data.investmentLimits,
                 referralBonusPercentageForMasterPlan: data.referralBonusPercentageForMasterPlan,
