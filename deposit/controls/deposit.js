@@ -18,7 +18,7 @@ const WEBHOOK_SECRET_DEV = "6367d535-8dce-4eea-993f-20bfd23cbfbd"
 const API_KEY = "a32d3733-a940-4786-b667-e8798d231eb2";
 const WEBHOOK_SECRET = "3826984f-7d24-4535-a68f-d63ce6af6ffb"
 
-Client.init(API_KEY);
+Client.init(process.env.ENV !=='dev' ? API_KEY : API_KEY_DEV);
 const {Charge} = resources;
 
 const window = new JSDOM('').window;
@@ -150,7 +150,7 @@ module.exports ={
             
             const rawBody = req.rawBody;
             const signature = req.headers['x-cc-webhook-signature'];
-            const webhookSecret = WEBHOOK_SECRET
+            const webhookSecret = process.env.ENV !=='dev' ? WEBHOOK_SECRET : WEBHOOK_SECRET_DEV;
             const event = Webhook.verifyEventBody(rawBody, signature, webhookSecret);
 
             // get the deposit database

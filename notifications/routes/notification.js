@@ -4,7 +4,11 @@ const { adminAuth, verifiedUserAuth } = require("../../auth/middlewares/auth")
 
 const route = express.Router()
 
-route.get("/set", verifiedUserAuth, notification.set);
+route.post("/set", adminAuth, notification.set);
+
+route.get("/get-all", verifiedUserAuth, notification.get);
+
+route.put("/handle-read/:id", verifiedUserAuth, notification.read);
 
 
 module.exports = route

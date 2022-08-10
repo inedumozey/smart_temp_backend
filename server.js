@@ -11,8 +11,11 @@ require('dotenv').config()
 const winston = require("./config/winstonConfig")
 const db = require('./config/db');
 const errorResponder = require('./error/catchAll')
+const webSocket = require("./webSocket/webSocket")
 const app = express();
-const server = http.createServer(app)
+const server = http.createServer(app);
+const {Server} = require('socket.io')
+// const Notification = require("./notifications/models/notification")
 
 // const URL = process.env.MONGO_URL_DEV
 const URL = process.env.MONGO_URL
@@ -20,15 +23,14 @@ const URL = process.env.MONGO_URL
 mongoose.connect(URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true ,
-    
-}, (err)=>{
-    if(err){
-        console.log(err)
-    }
-    else{
-        console.log('Database connected')
-    }
 });
+
+const connection = mongoose.connection;
+connection.once('open', ()=>{
+    console.log("Database connected");
+})
+
+
 
 // parse requests of json type
 app.use(express.json({
@@ -44,7 +46,6 @@ app.use(express.urlencoded({ extended: false}));
 app.use(cookieParser())
 
 // logger
-app.use(morgan('combined'));
 // app.use(morgan('combined', { stream: winston.stream }));
 
 // cross-origin request
@@ -53,6 +54,36 @@ var corsOptions = {
     credentials: true
 };
 app.use(cors(corsOptions))
+
+const io = new Server(server, {
+    cors: {
+        origin: process.env.ENV==='dev' ? 'http://localhost:3000' : 'https://www.teamsmartearners.com'
+    }
+})
+
+
+// io.on('connection', socket=>{
+//     console.log("someon in")
+// })
+
+// Notification.watch().
+// on('change', data=>{
+  
+//     if(data.operationType === 'insert'){
+//         //get the data
+//         const info = {
+//             id: data.fullDocument._id,
+//             title: data.fullDocument.title,
+//             body: data.fullDocument.body,
+//             isRead: data.fullDocument.isRead,
+//             createdAt: data.fullDocument.createdAt,
+//             updatedAt: data.fullDocument.updatedAt,
+//         }
+//         io.emit("notifications", data.fullDocument._id)
+//     }
+// })
+
+
 
 app.use(fileupload())
 
@@ -109,5 +140,9 @@ server.listen(PORT, (err)=>{
     }
 })
 
-// connect websocket using
+
+
+
+
+
 

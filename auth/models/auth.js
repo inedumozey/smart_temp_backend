@@ -85,7 +85,13 @@ const schema = new mongoose.Schema(
         masterInvestmentCount: {
             type: Number,
             default: 0
-        }
+        },
+        notifications: [
+            {
+                type: objectID,
+                ref: 'Notification', 
+            }
+        ]
     },
     {
         timestamps: true

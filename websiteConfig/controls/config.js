@@ -158,8 +158,6 @@ module.exports ={
 
                 totalInvestors: req.body.totalInvestors ? Number(DOMPurify.sanitize(req.body.totalInvestors)) : process.env.TOTAL_INVESTORS ? Number(process.env.TOTAL_INVESTORS) : Number(totalInvestors),
 
-                totalAvailableCoin: req.body.totalAvailableCoin ? Number(DOMPurify.sanitize(req.body.totalAvailableCoin)) : process.env.TOTAL_AVAILABLE_COIN ? Number(process.env.TOTAL_AVAILABLE_COIN) : Number(totalAvailableCoin),
-
                 totalSecPaid: req.body.totalSecPaid ? Number(DOMPurify.sanitize(req.body.totalSecPaid)) : process.env.TOTAL_SEC_PAID ? Number(process.env.TOTAL_SEC_PAID) : Number(totalSecPaid),
 
                 conversionRate: req.body.conversionRate ? Number(DOMPurify.sanitize(req.body.conversionRate)) : process.env.CONVERSION_RATE ? Number(process.env.CONVERSION_RATE) : Number(conversionRate),
@@ -249,7 +247,7 @@ module.exports ={
                 totalMembers: data.totalMembers,
                 totalInvestors: data.totalInvestors,
                 totalSecPaid: data.totalSecPaid,
-                movingText: dara.movingText, 
+                movingText: data.movingText, 
                 conversionRate: data.conversionRate,
                 investmentLimits: data.investmentLimits,
                 referralBonusPercentageForMasterPlan: data.referralBonusPercentageForMasterPlan,
@@ -336,7 +334,7 @@ module.exports ={
             return res.status(200).json({ status: true, msg: "successful", data: configs})
         }
         catch(err){
-            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+            return res.status(500).json({ status: false, msg: err.message})
         }
     },
 
