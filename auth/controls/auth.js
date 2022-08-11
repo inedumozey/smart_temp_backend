@@ -163,18 +163,36 @@ module.exports = {
                 email: DOMPurify.sanitize(req.body.email),
             }
 
-
-
             const { email, username, password, cpassword } = data;
+
+            function checkEmail(email) {
+               
+                var filter = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                
+                return filter.test(email) ? true : false
+            }
             
             if(!email || !password || !username){
                 return res.status(400).json({status: false, msg: "All fields are required!"});
-
             }
+        
+            else if(username.length < 4){
+                return res.status(405).json({status: false, msg: "Username too short, must not be less than 4 characters"});
+            }
+
+            else if(password.length < 6){
+                return res.status(405).json({status: false, msg: "Password too short, must not be less than 6 characters"});
+            }
+
             else if(password !== cpassword){
                 return res.status(405).json({status: false, msg: "Passwords do not match!"});
                 
             }
+
+            else if(!checkEmail(email)){
+                return res.status(405).json({status: false, msg: "Email is invalid!"});
+            }
+
             //check for already existing email and username
             const oldUser = await User.findOne({email});
             const oldUsername = await User.findOne({username});
@@ -298,24 +316,25 @@ module.exports = {
                 //search token in the database
                 
                 const user = await User.findOne({token});
-                https://squid-app-cqsgv.ondigitalocean.app
+
                 if(!user){
-                    return res.status(400).json({status: false, msg: "Invalid token"})
-                            
+                    return res.status(400).json({status: false, msg: "Invalid token"})                            
                 }
-                if(user.isBlocked){
+                else if(user.isBlocked){
                     return res.status(402).json({status: false, msg: "This account is blocked and cannot be verified, please contact customer support"})
                 }
                 
-                if(user.isVerified){
-                    return res.status(200).json({status: true, msg: "Your account has already been verified", isVerified: user.isVerified})
+                else if(user.isVerified){
+                    return res.status(400).json({status: false, msg: "Your account has already been verified", isVerified: user.isVerified})
                 }
 
-                user.isVerified = true;
-                user.token = "";
-                setTimeout(async()=> await user.save(), 1000);
+                else{
+                    user.isVerified = true;
+                    user.token = "";
+                    setTimeout(async()=> await user.save(), 1000);
 
-                return res.status(200).json({status: true, msg: "Your account is verified", isVerified: user.isVerified})
+                    return res.status(200).json({status: true, msg: "Your account is verified", isVerified: user.isVerified})
+                }
             }
         }
         catch(err){
@@ -502,6 +521,11 @@ module.exports = {
                 return res.status(405).json({status: false, msg: "Passwords do not match!"});
                 
             }
+
+            else if(data.password.length < 6){
+                return res.status(405).json({status: false, msg: "Password too short, must not be less than 6 characters"});
+            }
+
             if(!token){
                 return res.status(400).json({status: false, msg: "Token is missing!"})
             }

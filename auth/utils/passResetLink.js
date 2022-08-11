@@ -35,7 +35,7 @@ module.exports = async(data, res)=>{
         }
     } 
 
-    const URL = `${process.env.FRONTEND_BASE_URL}/${process.env.FRONTEND_RESET_PASS_URL}/?token=${data.passwordReset.token}`
+    const URL = `${process.env.ENV == 'dev' ? process.env.FRONTEND_BASE_URL_DEV : process.env.FRONTEND_BASE_URL}/${process.env.FRONTEND_RESET_PASS_URL}/?token=${data.passwordReset.token}`
 
     if(PRODUCTION){
         // email text
@@ -89,7 +89,7 @@ module.exports = async(data, res)=>{
                 }
             }
             else{
-                return res.status(200).json({status: true, msg: `Check your email (${data.email}) to reset your password`, token: data.passwordReset.token});
+                return res.status(200).json({status: true, msg: `Check your email (${data.email}) to reset your password`});
             }
         })                    
 

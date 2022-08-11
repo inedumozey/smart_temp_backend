@@ -11,7 +11,6 @@ require('dotenv').config()
 const winston = require("./config/winstonConfig")
 const db = require('./config/db');
 const errorResponder = require('./error/catchAll')
-const webSocket = require("./webSocket/webSocket")
 const app = express();
 const server = http.createServer(app);
 const {Server} = require('socket.io')
@@ -20,7 +19,7 @@ const {Server} = require('socket.io')
 // const URL = process.env.MONGO_URL_DEV
 const URL = process.env.MONGO_URL
 
-mongoose.connect(URL, {
+mongoose.connect("mongodb://localhost:27017/smartEarners", {
     useNewUrlParser: true,
     useUnifiedTopology: true ,
 });
