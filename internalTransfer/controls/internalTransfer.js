@@ -206,7 +206,8 @@ module.exports ={
 
             const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']});
 
-            return res.status(200).json({ status: true, msg: `Transaction successful`, data: data_}) 
+
+            return res.status(200).json({ status: true, msg: `Transaction successful`, data: data.amount}) 
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})

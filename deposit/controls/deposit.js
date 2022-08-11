@@ -15,8 +15,8 @@ const PRODUCTION = Boolean(process.env.PRODUCTION);
 const API_KEY_DEV = "326db613-b084-4c42-86b1-05ff3828353b";
 const WEBHOOK_SECRET_DEV = "6367d535-8dce-4eea-993f-20bfd23cbfbd"
 
-const API_KEY = "a32d3733-a940-4786-b667-e8798d231eb2";
-const WEBHOOK_SECRET = "3826984f-7d24-4535-a68f-d63ce6af6ffb"
+const API_KEY = "8223ccf5-0d2e-48de-b598-6aac58bb1180";
+const WEBHOOK_SECRET = "3b3dbfd1-7c99-4c15-96bc-894c2000f3a3"
 
 Client.init(process.env.ENV !=='dev' ? API_KEY : API_KEY_DEV);
 const {Charge} = resources;

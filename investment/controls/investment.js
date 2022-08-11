@@ -394,7 +394,7 @@ module.exports ={
                               
                         const investmentData =  await Investment.findOne({_id: newInvestment.id})
 
-                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: investmentData})
+                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: data.amount}})
                     }
 
                     else{
@@ -492,7 +492,7 @@ module.exports ={
                         
                         const investmentData = await Investment.findOne({_id: newInvestment.id});
 
-                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: investmentData})
+                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: plan.amount}})
                     }
                 }
             }
