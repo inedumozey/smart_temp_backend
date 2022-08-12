@@ -1,17 +1,31 @@
 const mongoose = require('mongoose')
 require('dotenv').config();
 const Config = mongoose.model("Config");
-const Email = require('@mozeyinedu/email')
+// const Email = require('@mozeyinedu/email')
+const nodemailer = require("nodemailer")
 
 const PRODUCTION = Boolean(process.env.PRODUCTION);
 const createdYear = new Date().getFullYear();
 const copyrightYear = createdYear > 2022 ? `2022 - ${new Date().getFullYear()}` : '2022'
 
-const email = new Email({
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-    host: process.env.HOST
-});
+const transporter = nodemailer.createTransport({
+    host: process.env.HOST,
+    port: 465,
+    secureConnection: true,
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+        tls: {
+            secureProtocol: "TLSv1_method"
+        }
+    }
+    
+})
+// const email = new Email({
+//     user: process.env.EMAIL_USER,
+//     pass: process.env.EMAIL_PASS,
+//     host: process.env.HOST
+// });
 
 module.exports = async(data, res)=>{
 
@@ -76,7 +90,7 @@ module.exports = async(data, res)=>{
             html: text,
         }
         
-        email.send(options, async(err, resp)=>{
+        transporter.sendMail(options, async(err, resp)=>{
             if(err){
                 if(err.message.includes("ENOTFOUND") || err.message.includes("EREFUSED") || err.message.includes("EHOSTUNREACH")){
                     return res.status(408).json({status: false, msg: "No network connectivity"})
