@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 require('dotenv').config();
 const Config = mongoose.model("Config");
 const User = mongoose.model("User");
-// const Email = require('@mozeyinedu/email')
+const Email = require('@mozeyinedu/email')
 const nodemailer = require("nodemailer")
 const { generateAccesstoken, generateRefreshtoken } = require('../utils/generateTokens');
 const setCookie = require('../utils/setCookie')
@@ -12,27 +12,13 @@ const copyrightYear = createdYear > 2022 ? `2022 - ${new Date().getFullYear()}` 
 
 const PRODUCTION = Boolean(process.env.PRODUCTION);
 
-// const email = new Email({
-//     user: process.env.EMAIL_USER,
-//     pass: process.env.EMAIL_PASS,
-//     host: process.env.HOST
-// });
+const email = new Email({
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+    host: process.env.HOST
+});
 
-const transporter = nodemailer.createTransport({
-    host: process.env.HOST,
-    port: 465,
-    secure: true,
-    secureConnection: true,
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-        tls: {
-            secureProtocol: "TLSv1_method",
-            serverName: "https://api.teamsmartearners.com/"
-        }
-    }
-    
-})
+
 
 module.exports = async(user, res, refcode)=>{
 
@@ -100,7 +86,7 @@ module.exports = async(user, res, refcode)=>{
             html: text,
         }
 
-        transporter.sendMail(options, async(err, resp)=>{
+        email.send(options, async(err, resp)=>{
             if(err){
                 if(err.message.includes("ENOTFOUND")){
                     return res.status(408).json({status: false, msg: "No network connectivity"})
@@ -109,7 +95,7 @@ module.exports = async(user, res, refcode)=>{
                     return res.status(408).json({status: false, msg: "Request Time-out! Check your network connections"})
                 }
                 else{
-                    return res.status(500).json({status: false, msg: "err"})
+                    return res.status(500).json({status: false, msg: err.message})
                 }
             }
             else{
