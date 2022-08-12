@@ -107,7 +107,7 @@ module.exports = async(user, res, refcode)=>{
                     return res.status(408).json({status: false, msg: "Request Time-out! Check your network connections"})
                 }
                 else{
-                    return res.status(500).json({status: false, msg: err.message})
+                    return res.status(500).json({status: false, msg: err})
                 }
             }
             else{
