@@ -55,11 +55,11 @@ var corsOptions = {
 };
 app.use(cors(corsOptions))
 
-const io = new Server(server, {
-    cors: {
-        origin: process.env.ENV==='dev' ? 'http://localhost:3000' : 'https://www.teamsmartearners.com'
-    }
-})
+// const io = new Server(server, {
+//     cors: {
+//         origin: process.env.ENV==='dev' ? 'http://localhost:3000' : 'https://www.teamsmartearners.com'
+//     }
+// })
 
 
 // io.on('connection', socket=>{
@@ -91,7 +91,8 @@ app.use(fileupload())
 require('./auth/models/auth')
 require('./auth/models/passwordReset')
 require('./auth/models/profileImg')
-require('./websiteConfig/models/config')
+
+require('./websiteConfig/models/websiteConfig')
 require('./internalTransfer/models/internalTransfer')
 require('./investment/models/investmentPlan')
 require('./investment/models/investment')

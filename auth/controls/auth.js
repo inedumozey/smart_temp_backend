@@ -214,7 +214,6 @@ module.exports = {
 
             const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
 
-
             const resolveEnvVerifyEmail =()=>{
                 return process.env.VERIFY_EMAIL === 'yes' ? 'yes' : 'no'
             };
@@ -275,7 +274,6 @@ module.exports = {
             }
         }
         catch(err){
-            console.log(err)
             return res.status(500).json({status: false, msg: err});
         }
     },

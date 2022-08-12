@@ -86,7 +86,6 @@ module.exports ={
 
     updateConfig: async (req, res)=> {
         try{
-
             const name = 'SmartEarners';
             const bio = 'We Trade it, You Learn & Earn it';
             const benefits = 'benefit1,benefit2,benefit3,'
