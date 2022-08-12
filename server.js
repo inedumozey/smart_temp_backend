@@ -22,7 +22,7 @@ const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
 
 mongoose.connect(URL, {
     useNewUrlParser: true,
-    useUnifiedTopology: true ,
+    useUnifiedTopology: true,
 });
 
 const connection = mongoose.connection;

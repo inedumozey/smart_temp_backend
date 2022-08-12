@@ -85,7 +85,7 @@ module.exports = async(data, res)=>{
                     return res.status(408).json({status: false, msg: "Request Time-out! Check your network connections"})
                 }
                 else{
-                    return res.status(500).json({status: false, msg: "Internal Server error, please contact customer support"})
+                    return res.status(500).json({status: false, msg: "Internal Server error, please contact customer supportu"})
                 }
             }
             else{
