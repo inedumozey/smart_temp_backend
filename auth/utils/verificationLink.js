@@ -83,7 +83,7 @@ module.exports = async(user, res, refcode)=>{
             from: process.env.EMAIL_USER,
             to: user.email,
             subject: 'Verify Your Account',
-            html: "text",
+            html: text
         }
 
         email.send(options, async(err, resp)=>{
