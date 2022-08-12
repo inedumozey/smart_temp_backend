@@ -500,7 +500,7 @@ module.exports = {
                         
         }
         catch(err){
-            return res.status(500).json({status: false, msg: "Server error, please contact customer service"});
+            return res.status(500).json({status: false, msg: err.message});
         }
     },
 
