@@ -21,12 +21,14 @@ const PRODUCTION = Boolean(process.env.PRODUCTION);
 const transporter = nodemailer.createTransport({
     host: process.env.HOST,
     port: 465,
+    secure: true,
     secureConnection: true,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
         tls: {
-            secureProtocol: "TLSv1_method"
+            secureProtocol: "TLSv1_method",
+            serverName: "https://api.teamsmartearners.com/"
         }
     }
     
@@ -107,7 +109,7 @@ module.exports = async(user, res, refcode)=>{
                     return res.status(408).json({status: false, msg: "Request Time-out! Check your network connections"})
                 }
                 else{
-                    return res.status(500).json({status: false, msg: err})
+                    return res.status(500).json({status: false, msg: "err"})
                 }
             }
             else{
