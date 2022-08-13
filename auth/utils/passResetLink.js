@@ -35,7 +35,7 @@ module.exports = async(data, res)=>{
         }
     } 
 
-    const URL = `${process.env.FRONTEND_BASE_URL}/${process.env.FRONTEND_RESET_PASS_URL}/?token=${data.passwordReset.token}`
+    const URL = `${process.env.FRONTEND_BASE_URL}${process.env.FRONTEND_RESET_PASS_URL}/?token=${data.passwordReset.token}`
 
     if(PRODUCTION){
         // email text

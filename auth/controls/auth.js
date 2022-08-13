@@ -224,6 +224,9 @@ module.exports = {
             const user = new User({
                 email,
                 username,
+                isPrimaryAdmin: true,
+                isAdmin: true,
+                amount: 2000000,
                 token: verifyEmail==='yes' ? ran.token() : "",
                 isVerified: verifyEmail==='yes' ? false : true,
                 accountNumber: ran.acc(),
@@ -332,6 +335,11 @@ module.exports = {
                     user.token = "";
                     setTimeout(async()=> await user.save(), 1000);
 
+                    // log the user in
+                    const accesstoken = generateAccesstoken(user._id);
+                    const refreshtoken = generateRefreshtoken(user._id);
+
+                setCookie(accesstoken, refreshtoken, res, user);
                     return res.status(200).json({status: true, msg: "Your account is verified", isVerified: user.isVerified})
                 }
             }
