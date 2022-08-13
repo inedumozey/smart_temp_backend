@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "engines": {"node": "16.14.2"},
   "description": "Smart Earners RESTful API Services",
-  "main": "server.js",
+  "main": "index.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/inedumozey/smartEarnersBackend.git"
   },
   "scripts": {
-    "dev": "nodemon server.js",
-    "start": "node server.js"
+    "dev": "nodemon index.js",
+    "start": "node index.js"
   },
   "keywords": [
     "Smart",
