@@ -14,8 +14,6 @@ const errorResponder = require('./error/catchAll')
 const app = express();
 const server = http.createServer(app);
 const {Server} = require('socket.io')
-// const Notification = require("./notifications/models/notification")
-
 // const URL = process.env.MONGO_URL_DEV
 // const URL = process.env.MONGO_URL
 const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
@@ -29,8 +27,6 @@ const connection = mongoose.connection;
 connection.once('open', ()=>{
     console.log("Database connected");
 })
-
-
 
 // parse requests of json type
 app.use(express.json({
