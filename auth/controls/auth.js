@@ -635,9 +635,9 @@ module.exports = {
 
             const loggedUser = await User.findOne({_id: loggedId})
 
-            // if(loggedUser.isPrimaryAdmin && id==loggedId){
-            //     return res.status(401).json({status: false, msg: "Primary Admin cannot be remove from the role "});
-            // }
+            if(loggedUser.isPrimaryAdmin && id==loggedId){
+                return res.status(401).json({status: false, msg: "Primary Admin cannot be remove from the role "});
+            }
             // update the user with the phone number
             const data = await User.findByIdAndUpdate({_id: id}, {$set: {
                 isAdmin: false
