@@ -44,7 +44,7 @@ module.exports = async(user, res, refcode)=>{
         }
     } 
 
-    const URL =  `${process.env.FRONTEND_BASE_URL}/${process.env.FRONTEND_VERIFY_URL}/?token=${user.token}`
+    const URL =  `${process.env.FRONTEND_BASE_URL}${process.env.FRONTEND_VERIFY_URL}/?token=${user.token}`
     
     if(PRODUCTION){
         //send email
