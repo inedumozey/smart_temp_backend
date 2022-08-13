@@ -1,6 +1,7 @@
 {
   "name": "smart-earners-backend",
   "version": "0.1.0",
+  "engines": {"node": "16.14.2"},
   "description": "Smart Earners RESTful API Services",
   "main": "server.js",
   "repository": {
