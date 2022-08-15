@@ -19,7 +19,7 @@ const {Server} = require('socket.io')
 const URL = process.env.MONGO_URL
 // const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
 
-mongoose.connect("mongodb+srv://smartearn:12345@cluster0.ygoru8l.mongodb.net/?retryWrites=true&w=majority", {
+mongoose.connect(URL, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 });
