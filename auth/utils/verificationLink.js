@@ -13,8 +13,9 @@ const copyrightYear = createdYear > 2022 ? `2022 - ${new Date().getFullYear()}` 
 const PRODUCTION = Boolean(process.env.PRODUCTION);
 
 const email = new Email({
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
+    user: "support@tonictoken.net",
+    // user: process.env.EMAIL_USER,
+    pass: "@My08036000347",
     host: process.env.HOST
 });
 
@@ -80,7 +81,7 @@ module.exports = async(user, res, refcode)=>{
         `
 
         const options = {
-            from: process.env.EMAIL_USER,
+            from: "support@tonictoken.net",
             to: user.email,
             subject: 'Verify Your Account',
             html: text
