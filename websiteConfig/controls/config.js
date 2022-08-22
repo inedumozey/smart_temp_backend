@@ -25,10 +25,12 @@ module.exports ={
                 const benefits_ = 'benefit1,benefit2,benefit3,'
                 const contacts_ = 'contact1,contact2,contact3,';
                 const withdrawalCoins_ = 'LITECOIN,DOGECOIN,TRON,USDT(bep20),BUSD(bep20),';
+                const referralContestPrize_ = '0,0,0,0,0,0,0,0,0,0,';
 
                 const benefits = process.env.BENEFITS ? process.env.BENEFITS : benefits_;
                 const contacts = process.env.CONTACTS ? process.env.CONTACTS : contacts_;
                 const withdrawalCoins = process.env.WITHDRAWAL_COINS ? process.env.WITHDRAWAL_COINS : withdrawalCoins_;
+                const referralContestPrize = process.env.REFERRAL_CONTEST_PRIZE ? process.env.REFERRAL_CONTEST_PRIZE : referralContestPrize_;
 
                 // convert benefits and contacts into array
                 const resolveArr =(string)=>{
@@ -37,6 +39,16 @@ module.exports ={
                     return dataArr
                 }
 
+                const resolveArrNum =(string)=>{
+                    const data = string.split(',')
+                    const dataArr = data.slice(0, data.length-1)
+                    const temp = []
+                    for(let i=0; i<dataArr.length; i++){
+                        temp.push(Number(dataArr[i]))
+                    }
+                    return temp;
+                }
+                
                 // resolve withdrawal factors into arrar
                 const resolveWithdrawalFactors =()=>{
                     let factors=[]
@@ -70,6 +82,7 @@ module.exports ={
                 newConfig.benefits = resolveArr(benefits)
                 newConfig.contacts = resolveArr(contacts)
                 newConfig.withdrawalCoins = resolveArr(withdrawalCoins)
+                newConfig.referralContestPrize = resolveArrNum(referralContestPrize)
 
                 const configs = await newConfig.save()
                 return res.status(200).json({ status: true, msg: "successful", data: configs})
@@ -115,9 +128,14 @@ module.exports ={
             const transferCommonDiff = 1000
             const masterPlanAmountLimit = 200000
             const referralBonusPercentage = 10;
-            const referralContestPercentage = 10;
+            const allowReferralContest = 'no';
+            const referralContestStarts = '2022-08-21T00:00';
+            const referralContestStops = '2022-08-21T00:00';
+            const referralContestPrize = '0,0,0,0,0,0,0,0,0,0,';
             const referralBonusMaxCountForMasterPlan = 30
             const referralBonusPercentageForMasterPlan = 0.3
+            const startContestReg = 'no'
+
             const movingText = 'Current Exchange Rate: 500 SEC = 1 USD, Recent Payouts: 02076425027 -> USDT, Total Available Sec: 0 SEC'
             
             const data = {
@@ -167,16 +185,20 @@ module.exports ={
 
                 referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.REFERRAL_BONUS_PERCENTAGE ? Number(process.env.REFERRAL_BONUS_PERCENTAGE) : Number(referralBonusPercentage),
 
+                referralContestStarts: req.body.referralContestStarts ? DOMPurify.sanitize(req.body.referralContestStarts) : process.env.REFERRAL_CONTEST_STARTS ? process.env.REFERRAL_CONTEST_STARTS : referralContestStarts,
 
+                referralContestStops: req.body.referralContestStops ? DOMPurify.sanitize(req.body.referralContestStops) : process.env.REFERRAL_CONTEST_STOPS ? process.env.REFERRAL_CONTEST_STOPS : referralContestStops,
 
                 referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.TOTAL_AVAILABLE_COIN ? Number(process.env.TOTAL_AVAILABLE_COIN) : Number(referralBonusPercentage),
 
                 referralBonusPercentage: req.body.referralBonusPercentage ? Number(DOMPurify.sanitize(req.body.referralBonusPercentage)) : process.env.RECENT_PAYOUT ? Number(process.env.RECENT_PAYOUT) : Number(referralBonusPercentage),
 
+                allowReferralContest: req.body.allowReferralContest ? (DOMPurify.sanitize(req.body.allowReferralContest).toLowerCase() === 'yes' ? 'yes' : 'no' )  :  (process.env.REFERRAL_CONTEST_STARTS ? process.env.REFERRAL_CONTEST_STARTS.toLowerCase() === 'yes' ? 'yes' : 'no' : allowReferralContest.toLowerCase()),
 
+                referralContestPrize: req.body.referralContestPrize ? DOMPurify.sanitize(req.body.referralContestPrize) : process.env.REFERRAL_CONTEST_PRIZE ? process.env.REFERRAL_CONTEST_PRIZE : referralContestPrize,
 
-                referralContestPercentage: req.body.referralContestPercentage ? Number(DOMPurify.sanitize(req.body.referralContestPercentage)) : process.env.REFERRAL_CONTEST_PERCENTAGE ? Number(process.env.REFERRAL_CONTEST_PERCENTAGE) : Number(referralContestPercentage),
-                
+                startContestReg: req.body.startContestReg ? (DOMPurify.sanitize(req.body.startContestReg).toLowerCase() === 'yes' ? 'yes' : 'no' )  :  (process.env.START_CONTEST_REG ? process.env.START_CONTEST_REG.toLowerCase() === 'yes' ? 'yes' : 'no' : startContestReg.toLowerCase()),
+
                 referralBonusPercentageForMasterPlan: req.body.referralBonusPercentageForMasterPlan ? Number(DOMPurify.sanitize(req.body.referralBonusPercentageForMasterPlan)) : process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER ? Number(process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER) : Number(referralBonusPercentageForMasterPlan),
 
                 referralBonusMaxCountForMasterPlan: req.body.referralBonusMaxCountForMasterPlan ? Number(DOMPurify.sanitize(req.body.referralBonusMaxCountForMasterPlan)) : process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN ? Number(process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN) : Number(referralBonusMaxCountForMasterPlan),
@@ -200,6 +222,16 @@ module.exports ={
                 const data = string.split(',')
                 const dataArr = data.slice(0, data.length-1)
                 return dataArr
+            }
+
+            const resolveArrNum =(string)=>{
+                const data = string.split(',')
+                const dataArr = data.slice(0, data.length-1)
+                const temp = []
+                for(let i=0; i<dataArr.length; i++){
+                    temp.push((Number(dataArr[i])))
+                }
+                return temp
             }
 
             const resolveWithdrawalFactors =()=>{
@@ -231,6 +263,7 @@ module.exports ={
                 bio: data.bio,
                 benefits: resolveArr(data.benefits),
                 contacts: resolveArr(data.contacts),
+                referralContestPrize: resolveArrNum(data.referralContestPrize),
                 withdrawalCoins: resolveArr(data.withdrawalCoins),
                 customerSupport: data.customerSupport,
                 nativeCurrency: data.nativeCurrency,
@@ -251,7 +284,10 @@ module.exports ={
                 investmentLimits: data.investmentLimits,
                 referralBonusPercentageForMasterPlan: data.referralBonusPercentageForMasterPlan,
                 referralBonusPercentage: data.referralBonusPercentage,
-                referralContestPercentage: data.referralContestPercentage,
+                allowReferralContest: data.allowReferralContest,
+                referralContestStarts: data.referralContestStarts,
+                referralContestStops: data.referralContestStops,
+                startContestReg: data.startContestReg,
                 masterPlanAmountLimit: data.masterPlanAmountLimit,
                 minWithdrawalLimit: data.minWithdrawalLimit,
                 maxWithdrawalLimit: data.maxWithdrawalLimit,
@@ -274,16 +310,28 @@ module.exports ={
                 const benefits_ = 'benefit1,benefit2,benefit3,'
                 const contacts_ = 'contact1,contact2,contact3,';
                 const withdrawalCoins_ = 'LITECOIN,DOGECOIN,TRON,USDT(bep20),BUSD(bep20),';
+                const referralContestPrize_ = '0,0,0,0,0,0,0,0,0,0,';
 
                 const benefits = process.env.BENEFITS ? process.env.BENEFITS : benefits_;
                 const contacts = process.env.CONTACTS ? process.env.CONTACTS : contacts_;
                 const withdrawalCoins = process.env.WITHDRAWAL_COINS ? process.env.WITHDRAWAL_COINS : withdrawalCoins_;
+                const referralContestPrize = process.env.REFERRAL_CONTEST_PRIZE ? process.env.REFERRAL_CONTEST_PRIZE : referralContestPrize_;
 
                 // convert benefits and contacts into array
                 const resolveArr =(string)=>{
                     const data = string.split(',')
                     const dataArr = data.slice(0, data.length-1)
                     return dataArr
+                }
+
+                const resolveArrNum =(string)=>{
+                    const data = string.split(',')
+                    const dataArr = data.slice(0, data.length-1)
+                    const temp = []
+                    for(let i=0; i<dataArr.length; i++){
+                        temp.push((Number(dataArr[i])))
+                    }
+                    return temp
                 }
 
                 // resolve withdrawal factors into arrar
@@ -319,6 +367,7 @@ module.exports ={
                 newConfig.benefits = resolveArr(benefits)
                 newConfig.contacts = resolveArr(contacts)
                 newConfig.withdrawalCoins = resolveArr(withdrawalCoins)
+                newConfig.referralContestPrize = resolveArrNum(referralContestPrize)
 
                 const configs = await newConfig.save()
                 return res.status(200).json({ status: true, msg: "successful", data: configs})

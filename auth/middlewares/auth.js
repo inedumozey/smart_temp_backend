@@ -168,7 +168,7 @@ module.exports ={
             next()
         } 
         else {
-            return res.status(402).json({status: false, msg: "You are not authorize, please login as Admin"})
+            return res.status(402).json({status: false, msg: "You are not authorize, please login as Primary Admin"})
         }
     }
     catch(err){

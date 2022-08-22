@@ -91,6 +91,23 @@ const schema = new mongoose.Schema(
             type: Number,
             default: 30
         },
+        allowReferralContest: {
+            type: String,
+            default: 'no'
+        },
+        startContestReg: {
+            type: String,
+            default: 'no'
+        },
+        referralContestStarts: {
+            type: String,
+            default: '2022-08-21T00:00'
+        },
+        referralContestStops: {
+            type: String,
+            default: '2022-08-21T00:00' 
+        },
+        referralContestPrize: [],
         minWithdrawalLimit: {
             type: Number,
             default: 5000

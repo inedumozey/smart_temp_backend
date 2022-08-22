@@ -7,6 +7,10 @@ require("dotenv").config();
 const createDOMPurify = require('dompurify');
 const {JSDOM} = require('jsdom');
 const { SEC_TO_USD } = require('../../config/conversionRate');
+const mailgunSetup = require('../../config/mailgun');
+
+const URL =  `${process.env.FRONTEND_BASE_URL}/admin/withdrawals/transactions/`
+const URL2 =  `${process.env.FRONTEND_BASE_URL}/dashboard/transactions/`
 
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window)
@@ -127,11 +131,48 @@ module.exports ={
                     coin: data.coin,
                     userId,
                     convertedAmount,
+                    tradeCurrency,
                     transactionId: newData._id
                 })
                 await NewTransactionHx.save()
                 
                 const withdrawalData = await Withdrawal.findOne({_id: newData.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
+
+                // senf email to admin
+                const text = `
+                    <div> <span style="font-weight: bold">${user.username}</span> just placed a Withdrawal Request </div>
+                    <br />
+                    <br />
+                    <div> Amount: ${data.amount.toFixed(4)} ${currency} </div>
+                    <br />
+                    <div> USD: ${convertedAmount} ${tradeCurrency} </div>
+                    <br />
+                    <div> Wallet: ${NewTransactionHx.walletAddress} </div>
+                    <br />
+                    <div> Coin: ${NewTransactionHx.coin} </div>
+                    <br />
+                    <div> Transaction Id: ${ newData._id} </div>
+                    <br />
+                    <div> Date: ${NewTransactionHx.createdAt} </div>
+                    <br />
+                    <div>
+                        <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL}">Click to Resolve</a>
+                    </div>
+
+                `
+                const email_data = {
+                    from: user.email,
+                    to: process.env.EMAIL_USER,
+                    subject: 'New Withdrawal Request',
+                    html: text
+                }
+
+                mailgunSetup.messages().send(email_data, (err, body)=>{
+                    if(err){
+                        return res.status(400).json({ status: true, msg: err.message})
+                    }
+                })
+                
                 return res.status(200).json({ status: true, msg: `Pending transaction, will be confirmed within ${pendingWithdrawalDuration} hours`, data: withdrawalData})
             }
         }
@@ -144,6 +185,11 @@ module.exports ={
     rejected: async (req, res)=> {
         try{
             const {id} = req.params
+
+            // get all config
+            const config = await Config.find({});
+
+            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
 
             // validate
             if(!mongoose.Types.ObjectId.isValid(id)){
@@ -164,6 +210,7 @@ module.exports ={
             else if(withdrawalHx.status === 'confirmed'){
                 return res.status(400).json({ status: false, msg: "Transaction already confirmed"});
             }
+
             
             else{
                 // save this data in Withdrawal database and change the status to rejected and refund the money
@@ -186,6 +233,45 @@ module.exports ={
 
                 withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
 
+
+                // senf email to admin
+                const text = `
+    
+                    <div> Your Withdrawal Request was rejected </div>
+                    <br />
+                    <br />
+                    <div> Amount: ${withdrawalData.amount} ${currency} <div/ >
+                    <br />
+                    <div> Wallet: ${withdrawalData.walletAddress} <div/ >
+                    <br />
+                    <div> Coin: ${withdrawalData.coin} <div/ >
+                    <br />
+                    <div> Transaction Id: ${id} <div/ >
+                    <br />
+                    <div> Date: ${withdrawalData.createdAt} </div>
+                    <br />
+                    <br />
+                    <div>
+                        <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL2}">Click to View</a>
+                    </div>
+                    <br />
+                    <div> SmartEarners </div>
+                    <div style="font-style: italic; font-weight: bold"> Invest and Earn with us </div>
+
+                `
+                const email_data = {
+                    from: `SmartEarners <${process.env.EMAIL_USER}>`,
+                    to: user.email,
+                    subject: 'Withdrawal Request',
+                    html: text
+                }
+
+                mailgunSetup.messages().send(email_data, (err, body)=>{
+                    if(err){
+                        return res.status(400).json({ status: true, msg: err.message})
+                    }
+                })
+
                 return res.status(200).json({ status: true, msg: `withdrawal to this wallet ${withdrawalData.walletAddress} was rejected`, data: withdrawalData})
             }
         }
@@ -197,6 +283,12 @@ module.exports ={
     confirm: async (req, res)=> {
         try{
             
+            // get all config
+            const config = await Config.find({});
+            
+            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
+
+
             // get withdrawal id
             const {id} = req.params
             
@@ -207,6 +299,9 @@ module.exports ={
             
             // get this withdrawal hx from the database
             const withdrawalHx = await Withdrawal.findOne({_id: id})
+
+            // find the user
+            const user = await User.findOne({_id: withdrawalHx.userId})
 
             if(!withdrawalHx){
                 return res.status(400).json({status: false, msg: "Transaction not found"})
@@ -233,6 +328,45 @@ module.exports ={
 
                 withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
 
+
+                // senf email to admin
+                const text = `
+    
+                    <div> Your Withdrawal Request was Confirmed </div>
+                    <br />
+                    <br />
+                    <div> Amount: ${withdrawalData.amount} ${currency} <div/ >
+                    <br />
+                    <div> Wallet: ${withdrawalData.walletAddress} <div/ >
+                    <br />
+                    <div> Coin: ${withdrawalData.coin} <div/ >
+                    <br />
+                    <div> Transaction Id: ${id} <div/ >
+                    <br />
+                    <div> Date: ${withdrawalData.createdAt} </div>
+                    <br />
+                    <div>
+                        <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL2}">Click to View</a>
+                    </div>
+                    <br />
+                    <div> SmartEarners </div>
+                    <div style="font-style: italic; font-weight: bold"> Invest and Earn with us </div>
+
+                `
+
+                const email_data = {
+                    from: `SmartEarners <${process.env.EMAIL_USER}>`,
+                    to: user.email,
+                    subject: 'Withdrawal Request',
+                    html: text
+                }
+
+                mailgunSetup.messages().send(email_data, (err, body)=>{
+                    if(err){
+                        return res.status(400).json({ status: true, msg: err.message})
+                    }
+                })
+            
                 return res.status(200).json({ status: true, msg: `Transaction confirmed`, data: withdrawalData})
             }
         }

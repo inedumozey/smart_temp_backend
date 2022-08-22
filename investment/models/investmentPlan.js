@@ -22,9 +22,19 @@ const schema = new mongoose.Schema(
         lifespan: {
             type: Number,
             required: true,
-            trim: true // in seconds
+            trim: true
         },
         returnPercentage: {
+            type: Number,
+            required: true,
+            trim: true
+        },
+        point: {
+            type: Number,
+            required: true,
+            trim: true
+        },
+        pointRewards: {
             type: Number,
             required: true,
             trim: true
@@ -35,3 +45,5 @@ const schema = new mongoose.Schema(
     }
 )
 mongoose.model("InvestmentPlan", schema);
+
+

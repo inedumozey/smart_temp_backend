@@ -1,24 +1,18 @@
 const mongoose = require('mongoose')
 require('dotenv').config();
 const Config = mongoose.model("Config");
+const Contest = mongoose.model("Contest");
 const User = mongoose.model("User");
-const Email = require('@mozeyinedu/email')
-const nodemailer = require("nodemailer")
 const { generateAccesstoken, generateRefreshtoken } = require('../utils/generateTokens');
-const setCookie = require('../utils/setCookie')
+const setCookie = require('../utils/setCookie');
+const mailgunSetup = require('../../config/mailgun');
+
+const startContest = false
 
 const createdYear = new Date().getFullYear();
 const copyrightYear = createdYear > 2022 ? `2022 - ${new Date().getFullYear()}` : '2022'
 
 const PRODUCTION = Boolean(process.env.PRODUCTION);
-
-const email = new Email({
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-    host: process.env.HOST
-});
-
-
 
 module.exports = async(user, res, refcode)=>{
 
@@ -28,6 +22,8 @@ module.exports = async(user, res, refcode)=>{
     let configData;
 
     const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+   
+    const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
 
     if( config && config.length >= 1){
         configData = {
@@ -79,14 +75,14 @@ module.exports = async(user, res, refcode)=>{
             </div>
         `
 
-        const options = {
-            from: process.env.EMAIL_USER,
+        const email_data = {
+            from: `SmartEarners <${process.env.EMAIL_USER}>`,
             to: user.email,
             subject: 'Verify Your Account',
             html: text
         }
 
-        email.send(options, async(err, resp)=>{
+        mailgunSetup.messages().send(email_data, async(err, resp)=>{
             if(err){
                 if(err.message.includes("ENOTFOUND")){
                     return res.status(408).json({status: false, msg: "No network connectivity"})
@@ -121,8 +117,19 @@ module.exports = async(user, res, refcode)=>{
                             referrerId: referringUser.id
                         }})
 
-                         // create referralBonus collection
-                         const newReferralTotalBonus = new ReferralTotalBonus({
+                        // instantiate Contest Database with the referrer user
+                        // Only save user to contest if not in before
+                        const contest = await Contest.findOne({userId: referringUser.id})
+                        if(!contest && startContestReg ==='yes'){
+                            const newContest = new Contest({
+                                userId: referringUser.id,
+                            })
+            
+                            await newContest.save()
+                        }
+
+                        // create referralBonus collection
+                        const newReferralTotalBonus = new ReferralTotalBonus({
                             referreeId: newUser._id,
                             referrerId: referringUser.id,
                             amount: 0,
@@ -158,6 +165,26 @@ module.exports = async(user, res, refcode)=>{
                 await User.findByIdAndUpdate({_id: newUser.id}, {$set: {
                     referrerId: referringUser.id
                 }})
+
+                // instantiate Contest Database with the referrer user
+                // Only save user to contest if not in before
+                const contest = await Contest.findOne({userId: referringUser.id})
+                if(!contest && startContestReg ==='yes'){
+                    const newContest = new Contest({
+                        userId: referringUser.id,
+                    })
+    
+                    await newContest.save()
+                }
+
+                // create referralBonus collection
+                const newReferralTotalBonus = new ReferralTotalBonus({
+                    referreeId: newUser._id,
+                    referrerId: referringUser.id,
+                    amount: 0,
+                    currency
+                })
+                await newReferralTotalBonus.save()
             }
         }
         

@@ -1,7 +1,9 @@
 {
   "name": "smart-earners-backend",
   "version": "0.1.0",
-  "engines": {"node": "16.14.2"},
+  "engines": {
+    "node": "16.14.2"
+  },
   "description": "Smart Earners RESTful API Services",
   "main": "index.js",
   "repository": {
@@ -38,6 +40,7 @@
     "http-errors": "^2.0.0",
     "jsdom": "^19.0.0",
     "jsonwebtoken": "^8.5.1",
+    "mailgun-js": "^0.22.0",
     "mongoose": "^6.3.6",
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",

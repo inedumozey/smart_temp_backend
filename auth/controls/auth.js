@@ -5,6 +5,7 @@ const appRoot = require("app-root-path")
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
 const ProfileImg = mongoose.model("ProfileImg")
+const Contest = mongoose.model("Contest")
 const PasswordReset = mongoose.model('PasswordReset');
 const ReferralTotalBonus = mongoose.model('ReferralTotalBonus');
 require("dotenv").config();
@@ -214,6 +215,8 @@ module.exports = {
 
             const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
 
+            const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
+
             const resolveEnvVerifyEmail =()=>{
                 return process.env.VERIFY_EMAIL === 'yes' ? 'yes' : 'no'
             };
@@ -267,6 +270,17 @@ module.exports = {
                             currency
                         })
                         await newReferralTotalBonus.save()
+
+                        // instantiate Contest Database with the referrer user
+                        // Only save user to contest if not in before
+                        const contest = await Contest.findOne({userId: referringUser.id})
+                        if(!contest && startContestReg==='yes'){
+                            const newContest = new Contest({
+                                userId: referringUser.id,
+                            })
+            
+                            await newContest.save()
+                        }
                     }
                 }
                 
@@ -832,7 +846,7 @@ module.exports = {
             
             const time = config && config.length >= 1 && config[0].unverifyUserLifeSpan ? config[0].unverifyUserLifeSpan : 0
     
-            const expiresIn = parseInt(time); // time is in seconds
+            const expiresIn = Number(time); // time is in seconds
   
             if(!time || time <= 0){
                 return res.status(200).json({status: true, msg: "Unverified users allowed to stay"})
