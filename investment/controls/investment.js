@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const InvestmentPlan = mongoose.model("InvestmentPlan");
 const Investment = mongoose.model("Investment");
 const ReferralBonus = mongoose.model("ReferralBonus");
+const Contest = mongoose.model("Contest");
 const ReferralTotalBonus = mongoose.model("ReferralTotalBonus");
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
@@ -55,6 +56,8 @@ module.exports ={
                 amount:  Number(DOMPurify.sanitize(req.body.amount)),
                 lifespan:  Number(DOMPurify.sanitize(req.body.lifespan)),
                 returnPercentage:  Number(DOMPurify.sanitize(req.body.returnPercentage)),
+                point:  Number(DOMPurify.sanitize(req.body.point)),
+                pointRewards:  Number(DOMPurify.sanitize(req.body.pointRewards)),
             }
 
             // get currency from config data if exist otherwise set to the one in env
@@ -66,7 +69,7 @@ module.exports ={
             const masterPlanAmountLimit = config && config.length >= 1 && config[0].masterPlanAmountLimit ? Number(config[0].masterPlanAmountLimit) : Number(process.env.MASTER_PLAN_AMOUNT_LIMIT);
 
             // validate form input
-            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage){
+            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage || !data.point || !data.pointRewards){
                 return res.status(500).json({ status: false, msg: "All fields are required"});
             }
 
@@ -99,6 +102,8 @@ module.exports ={
                 currency,
                 lifespan: data.lifespan,
                 returnPercentage: data.returnPercentage,
+                point: data.point,
+                pointRewards: data.pointRewards,
             })
 
             await newInvestmentPlan.save();
@@ -119,6 +124,8 @@ module.exports ={
                 amount: Number(DOMPurify.sanitize(req.body.amount)),
                 lifespan: Number(DOMPurify.sanitize(req.body.lifespan)),
                 returnPercentage: Number(DOMPurify.sanitize(req.body.returnPercentage)),
+                point:  Number(DOMPurify.sanitize(req.body.point)),
+                pointRewards:  Number(DOMPurify.sanitize(req.body.pointRewards)),
             }
 
             // get currency from config data if exist otherwise set to the one in env
@@ -130,7 +137,7 @@ module.exports ={
             const masterPlanAmountLimit = config && config.length >= 1 && config[0].masterPlanAmountLimit ? Number(config[0].masterPlanAmountLimit) : Number(process.env.MASTER_PLAN_AMOUNT_LIMIT);
 
             // validate form input
-            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage){
+            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage || !data.point || !data.pointRewards){
                 return res.status(400).json({ status: false, msg: "All fields are required"});
             }
 
@@ -181,6 +188,8 @@ module.exports ={
                 currency,
                 lifespan: data.lifespan,
                 returnPercentage: data.returnPercentage,
+                point: data.point,
+                pointRewards: data.pointRewards,
             }
             const updatedData = await InvestmentPlan.findByIdAndUpdate({_id: id}, {$set: planData}, {new: true});
 
@@ -288,6 +297,24 @@ module.exports ={
 
             const investmentLimits = config && config.length >= 1 && config[0].investmentLimits? config[0].investmentLimits : process.env.INVESTMENT_LIMITS;
 
+             // referral contest
+
+             const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
+
+            const allowReferralContest = config && config.length >= 1 && config[0].allowReferralContest? config[0].allowReferralContest : process.env.ALLOW_REFERRAL_CONTEST;
+
+            const referralContestStarts = config && config.length >= 1 && config[0].referralContestStarts
+
+            const referralContestStops = config && config.length >= 1 && config[0].referralContestStops
+
+            const currentTime = Date.now()
+            const startsAt = new Date(referralContestStarts).getTime()
+            const stopsAt = new Date(referralContestStops).getTime()
+
+            const allowContest = currentTime >= startsAt && currentTime <= stopsAt && allowReferralContest==='yes'
+
+            // const contestAllowed = currentTime >= startTime && currentTime - startTime <= referralContestDuration && allowReferralContest === 'yes'
+
             // if count is more than, refuse him of further investment
             if(count >= investmentLimits){
                 return res.status(400).json({ status: false, msg: `You cannot have more than ${investmentLimits} active investments`})
@@ -381,6 +408,16 @@ module.exports ={
                                         amount: refData.amount + referralBonus
                                     }})
                                 }
+
+                                // update the referral contest collection if allowContest is true
+                                if(allowContest && startContestReg === 'yes'){
+                                    await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
+                                        point: plan.point,
+                                    }}, {$set: {
+                                        currency
+                                    }})
+                                }
+                                
                             }
 
                             // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
@@ -460,6 +497,15 @@ module.exports ={
                                 })
 
                                 await newReferralBonus.save()
+
+                                // update the referral contest collection if allowContest is true
+                                if(allowContest && startContestReg === 'yes'){
+                                    await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
+                                        point: plan.point,
+                                    }}, {$set: {
+                                        currency
+                                    }})
+                                }
                                             
                                 //update the referral total bonus collection
                                 const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
@@ -472,7 +518,6 @@ module.exports ={
                             }
 
                             
-
                             // update referree user and change hasInvested to true
                             await User.findByIdAndUpdate({_id: userId}, {
                                 $set: {hasInvested: true}

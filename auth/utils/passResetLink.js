@@ -1,17 +1,11 @@
 const mongoose = require('mongoose')
 require('dotenv').config();
 const Config = mongoose.model("Config");
-const Email = require('@mozeyinedu/email')
+const mailgunSetup = require('../../config/mailgun');
 
 const PRODUCTION = Boolean(process.env.PRODUCTION);
 const createdYear = new Date().getFullYear();
 const copyrightYear = createdYear > 2022 ? `2022 - ${new Date().getFullYear()}` : '2022'
-
-const email = new Email({
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-    host: process.env.HOST
-});
 
 module.exports = async(data, res)=>{
 
@@ -69,14 +63,14 @@ module.exports = async(data, res)=>{
 
             </div>
         `
-        const options = {
-            from: process.env.EMAIL_USER,
+        const email_data = {
+            from: `SmartEarners <${process.env.EMAIL_USER}>`,
             to: data.email,
             subject: 'Reset Your Password',
             html: text,
         }
         
-        email.send(options, async(err, resp)=>{
+        mailgunSetup.messages().send(email_data, async(err, resp)=>{
             if(err){
                 if(err.message.includes("ENOTFOUND") || err.message.includes("EREFUSED") || err.message.includes("EHOSTUNREACH")){
                     return res.status(408).json({status: false, msg: "No network connectivity"})

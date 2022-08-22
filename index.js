@@ -100,6 +100,7 @@ require('./withdrawal/models/withdrawal')
 require('./notifications/models/notification')
 require('./testimonials/models/testimonials')
 require('./transactions/models/transactions')
+require('./referralContest/models/referralContest')
 
 // routes
 app.use('/auth',  require("./auth/routes/auth")); 
@@ -112,6 +113,8 @@ app.use('/withdrawal',  require('./withdrawal/routes/withdrawal'));
 app.use('/notification',  require('./notifications/routes/notification')); 
 app.use('/testimonials',  require('./testimonials/routes/testimonials')); 
 app.use('/transactions',  require('./transactions/routes/transactions')); 
+app.use('/message',  require('./message/routes/message')); 
+app.use('/referral-contest',  require('./referralContest/routes/referralContest')); 
 
 // Catch all Error Handler
 app.use(errorResponder);
@@ -134,13 +137,6 @@ server.listen(PORT, (err)=>{
         console.log(err.message)
     }
     else{
-        console.log(`Server connected in port ${PORT}`)
+        console.log(`Server Running on Port ${PORT}`)
     }
 })
-
-
-
-
-
-
-

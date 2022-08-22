@@ -1,6 +1,7 @@
 const mongoose = require('mongoose')
 const User = mongoose.model("User");
 const Config = mongoose.model("Config");
+const Contest = mongoose.model("Contest");
 const ReferralBonus = mongoose.model("ReferralBonus");
 const ReferralTotalBonus = mongoose.model("ReferralTotalBonus");
 require("dotenv").config();
@@ -56,7 +57,6 @@ module.exports ={
         }
     },
 
-
     getBounus: async (req, res)=> {
         try{
             const {id} = req.params;
@@ -110,6 +110,8 @@ module.exports ={
             const config = await Config.find({});
 
             const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+            
+            const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
 
             // get the logged user
             const loggedUser = await User.findOne({_id: userId});
@@ -151,6 +153,15 @@ module.exports ={
                 })
                 await newReferralTotalBonus.save()
 
+                // instantiate Contest Database with the referrer user
+                // Only save user to contest if not in before
+                const contest = await Contest.findOne({userId: referrerUser.id})
+                if(!contest && startContestReg==='yes'){
+                    const newContest = new Contest({
+                        userId: referrerUser.id,
+                    })
+                    await newContest.save()
+                }
 
                 return res.status(200).json({status: true, msg: `You have been successfully added to the referree list of ${referrerUser.username}`, data: updatedData})
             }
