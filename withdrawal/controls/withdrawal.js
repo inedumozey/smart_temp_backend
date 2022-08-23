@@ -161,7 +161,7 @@ module.exports ={
 
                 `
                 const email_data = {
-                    from: user.email,
+                    from: process.env.EMAIL_USER,
                     to: process.env.EMAIL_USER,
                     subject: 'New Withdrawal Request',
                     html: text
