@@ -252,6 +252,11 @@ module.exports = {
                     const referringUser = await User.findOne({referralCode: refcode})
                     if(referringUser){
 
+                        // check if refcode is owner's code, send error (you cannot referred yourself)
+                        if(newUser.referralCode === refcode.trim()){
+                            return res.status(400).json({status: false, msg: `Owner's Referral Code`})
+                        }
+
                         // add user as referree to the referring user
                         await User.findByIdAndUpdate({_id: referringUser._id}, {$push: {
                             referree: newUser._id,

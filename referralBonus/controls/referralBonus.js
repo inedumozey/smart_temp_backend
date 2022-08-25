@@ -130,8 +130,8 @@ module.exports ={
                 return res.status(404).json({status: false, msg: "User not found"})
             }
 
-            else if(loggedUser.referrerId === data.refcode.trim()){
-                return res.status(400).json({status: false, msg: `Owner's Referral Code ${priorReferrerUser.username}`})
+            else if(loggedUser.referralCode === data.refcode.trim()){
+                return res.status(400).json({status: false, msg: `Owner's Referral Code`})
             }
             else{
                 // push the loggedUser to the referrerUser's referree list
