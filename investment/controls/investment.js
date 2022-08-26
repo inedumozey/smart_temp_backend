@@ -123,8 +123,7 @@ module.exports ={
                 amount: Number(DOMPurify.sanitize(req.body.amount)),
                 lifespan: Number(DOMPurify.sanitize(req.body.lifespan)),
                 returnPercentage: Number(DOMPurify.sanitize(req.body.returnPercentage)),
-                point:  Number(DOMPurify.sanitize(req.body.point)),
-                pointRewards:  Number(DOMPurify.sanitize(req.body.pointRewards)),
+                point:  Number(DOMPurify.sanitize(req.body.point))
             }
 
             // get currency from config data if exist otherwise set to the one in env
@@ -136,7 +135,7 @@ module.exports ={
             const masterPlanAmountLimit = config && config.length >= 1 && config[0].masterPlanAmountLimit ? Number(config[0].masterPlanAmountLimit) : Number(process.env.MASTER_PLAN_AMOUNT_LIMIT);
 
             // validate form input
-            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage || !data.point || !data.pointRewards){
+            if(!data.type || !data.amount || !data.lifespan || !data.returnPercentage || !data.point){
                 return res.status(400).json({ status: false, msg: "All fields are required"});
             }
 
