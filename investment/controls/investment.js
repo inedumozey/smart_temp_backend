@@ -297,9 +297,9 @@ module.exports ={
 
             const investmentLimits = config && config.length >= 1 && config[0].investmentLimits? config[0].investmentLimits : process.env.INVESTMENT_LIMITS;
 
-             // referral contest
+            // referral contest
 
-             const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
+            const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
 
             const allowReferralContest = config && config.length >= 1 && config[0].allowReferralContest? config[0].allowReferralContest : process.env.ALLOW_REFERRAL_CONTEST;
 
@@ -410,7 +410,7 @@ module.exports ={
                                 }
 
                                 // update the referral contest collection if allowContest is true
-                                if(allowContest && startContestReg === 'yes'){
+                                if(allowContest){
                                     await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
                                         point: plan.point,
                                     }}, {$set: {
@@ -499,7 +499,7 @@ module.exports ={
                                 await newReferralBonus.save()
 
                                 // update the referral contest collection if allowContest is true
-                                if(allowContest && startContestReg === 'yes'){
+                                if(allowContest){
                                     await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
                                         point: plan.point,
                                     }}, {$set: {

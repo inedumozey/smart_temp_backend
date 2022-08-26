@@ -1,9 +1,11 @@
 const express = require("express")
 const referralContest = require('../controls/referralContest')
-const { adminAuth } = require("../../auth/middlewares/auth")
+const { adminAuth, priAdminAuth } = require("../../auth/middlewares/auth")
 
 const route = express.Router()
 
 route.get("/get-all", referralContest.getAll);
+route.put("/reset", adminAuth, referralContest.reset);
+route.put("/resolve", priAdminAuth, referralContest.resolve);
 
 module.exports = route
