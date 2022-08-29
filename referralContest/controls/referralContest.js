@@ -104,7 +104,7 @@ module.exports ={
 
                 // find those that were paid (those that were qualified) in the User database and update their account balance
                 const contestants = await Contest.find({paid: true});
-                console.log(contestants)
+                
                 for(let contestant of contestants){
                     if(!contestant.resolved){
                         await User.findOneAndUpdate({_id: contestant.userId}, {$inc: {

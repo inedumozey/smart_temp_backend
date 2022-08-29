@@ -227,9 +227,6 @@ module.exports = {
             const user = new User({
                 email,
                 username,
-                amount: 1000000,
-                isAdmin: true,
-                isPrimaryAdmin: true,
                 token: verifyEmail==='yes' ? ran.token() : "",
                 isVerified: verifyEmail==='yes' ? false : true,
                 accountNumber: ran.acc(),
