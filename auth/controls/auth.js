@@ -882,10 +882,6 @@ module.exports = {
             // delete all their investment hx
             //...await User.deleteMany({userId_: ids})
 
-             // clear refreshtoken from cookie
-             res.clearCookie("accesstoken");
-             res.clearCookie("refreshtoken");
-
             return res.status(200).json({status: true, msg: "Unverified Users removed successfully"})
             
         }
@@ -935,10 +931,6 @@ module.exports = {
             // delete his investment hx
             //...await User.findByIdAndDelete({userId_: id})
 
-             // clear refreshtoken from cookie
-             res.clearCookie("accesstoken");
-             res.clearCookie("refreshtoken");
-
             return res.status(200).json({status: true, msg: "User has been deleted", data: user});
 
         }
@@ -974,10 +966,6 @@ module.exports = {
 
             // delete all their investment hx
             //...await User.deleteMany({userId_: ids})
-
-             // clear refreshtoken from cookie
-             res.clearCookie("accesstoken");
-             res.clearCookie("refreshtoken");
 
             return res.status(200).json({status: true, msg: "All users have been deleted"})
 
