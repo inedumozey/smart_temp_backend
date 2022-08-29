@@ -7,7 +7,7 @@ require("dotenv").config();
 module.exports ={
     getAll: async (req, res)=> {
         try{
-            const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree']}).sort({point: -1, updatedAt: 1});
+            const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree', 'amount',]}).sort({point: -1, updatedAt: 1});
             return res.status(200).json({ status: true, msg: "successful", data})
         }
         catch(err){
@@ -43,7 +43,9 @@ module.exports ={
                 await Contest.updateMany({}, {$set:{
                     point: 0,
                     amountRewards: 0,
-                    paid: false
+                    paid: false,
+                    position: null,
+                    resolved: false
                 }}, {new: true});
     
                 const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree']}).sort({point: -1, updatedAt: 1});
@@ -91,22 +93,32 @@ module.exports ={
 
                 //loop through referralContestPrize and get each price together with the users of the length of the referralContestPrize
                 for(let i=0; i<referralContestPrize.length; i++){
-                    console.log(i)
-                    if(!qualifiedUsers[i].paid){
+                    if(qualifiedUsers[i] && !qualifiedUsers[i].paid && qualifiedUsers[i].point > 0){
                         await Contest.findOneAndUpdate({userId: qualifiedUsers[i].userId}, {$set: {
                             amountRewards: referralContestPrize[i],
-                            paid: true
-                        }})
-
-                        // find these same qualified users in User database and update their account nalance
-                        await User.findOneAndUpdate({userId: qualifiedUsers[i].userId}, {$inc: {
-                            amount: referralContestPrize[i],
+                            paid: true,
+                            position: Number(i) + 1
                         }}) 
                     }
                 } 
 
+                // find those that were paid (those that were qualified) in the User database and update their account balance
+                const contestants = await Contest.find({paid: true});
+                console.log(contestants)
+                for(let contestant of contestants){
+                    if(!contestant.resolved){
+                        await User.findOneAndUpdate({_id: contestant.userId}, {$inc: {
+                            amount: contestant.amountRewards
+                        }});
+
+                        await Contest.findOneAndUpdate({_id: contestant.id}, {$set: {
+                            resolved: true
+                        }})
+                    }
+                }  
+
                 // send the updated contest data to the frontend
-                const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree']}).sort({point: -1, updatedAt: 1});
+                const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree', 'amount']}).sort({point: -1, updatedAt: 1});
                 return res.status(200).json({ status: true, msg: "Rewarded Successfully", data})
             }
 
@@ -115,4 +127,21 @@ module.exports ={
             return res.status(500).json({ status: false, msg: err.message})
         }
     },
+
+
+    removeUser: async (req, res)=> {
+        try{
+            const {id} = req.params;
+
+            // remove the collection with this id
+
+            await Contest.findOneAndDelete({_id: id});
+
+            const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree', 'amount']}).sort({point: -1, updatedAt: 1});
+            return res.status(200).json({ status: true, msg: "successful", data})
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.message})
+        }
+    },    
 }

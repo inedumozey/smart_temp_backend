@@ -22,7 +22,15 @@ const schema = new mongoose.Schema(
         paid: {
             type: Boolean,
             default: false
-        },     
+        },
+        resolved: {
+            type: Boolean,
+            default: false
+        }, 
+        position: {
+            type: Number,
+            default: null
+        },  
     },
     {
         timestamps: true
