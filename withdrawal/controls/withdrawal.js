@@ -18,168 +18,169 @@ const DOMPurify = createDOMPurify(window)
 module.exports ={
 
     request: async (req, res)=> {
-        try{
-            const userId = req.user;
-            const data = {
-                amount:  Number(DOMPurify.sanitize(req.body.amount)),
-                coin:  DOMPurify.sanitize(req.body.coin),
-                walletAddress: DOMPurify.sanitize(req.body.walletAddress)
-            };
-            const convertedAmount = await SEC_TO_USD(Number(data.amount))
+        return res.status(400).json({ status: false, msg: 'check back in few minutes'})
+        // try{
+        //     const userId = req.user;
+        //     const data = {
+        //         amount:  Number(DOMPurify.sanitize(req.body.amount)),
+        //         coin:  DOMPurify.sanitize(req.body.coin),
+        //         walletAddress: DOMPurify.sanitize(req.body.walletAddress)
+        //     };
+        //     const convertedAmount = await SEC_TO_USD(Number(data.amount))
 
-            // resolve withdrawal factors incase it's not in the database
-            const resolveWithdrawalFactors =()=>{
-                let factors=[]
-                const maxWithdrawalLimit = process.env.MAX_WITHDRAWAL_LIMIT ? Number(process.env.MAX_WITHDRAWAL_LIMIT) : 100000;
-                const minWithdrawalLimit = process.env.MIN_WITHDRAWAL_LIMIT ? Number(process.env.MIN_WITHDRAWAL_LIMIT) : 5000;
-                const withdrawalCommomDiff = process.env.WITHDRAWAL_COMMON_DIFF ? Number(process.env.WITHDRAWAL_COMMON_DIFF) : 5000;
+        //     // resolve withdrawal factors incase it's not in the database
+        //     const resolveWithdrawalFactors =()=>{
+        //         let factors=[]
+        //         const maxWithdrawalLimit = process.env.MAX_WITHDRAWAL_LIMIT ? Number(process.env.MAX_WITHDRAWAL_LIMIT) : 100000;
+        //         const minWithdrawalLimit = process.env.MIN_WITHDRAWAL_LIMIT ? Number(process.env.MIN_WITHDRAWAL_LIMIT) : 5000;
+        //         const withdrawalCommomDiff = process.env.WITHDRAWAL_COMMON_DIFF ? Number(process.env.WITHDRAWAL_COMMON_DIFF) : 5000;
 
-                for(let i=minWithdrawalLimit; i<=maxWithdrawalLimit; i=i+withdrawalCommomDiff){
-                    factors.push(i)
-                }
-                return factors
-            }
+        //         for(let i=minWithdrawalLimit; i<=maxWithdrawalLimit; i=i+withdrawalCommomDiff){
+        //             factors.push(i)
+        //         }
+        //         return factors
+        //     }
 
-            const resolveArr =(string)=>{
-                const data = string.split(',')
-                const dataArr = data.slice(0, data.length-1)
-                return dataArr
-            }
+        //     const resolveArr =(string)=>{
+        //         const data = string.split(',')
+        //         const dataArr = data.slice(0, data.length-1)
+        //         return dataArr
+        //     }
 
-            // get currency, withdrawalCoins, maxWithdrawalLimit, minWithdrawalLimit and withdrawalCommomDifference from config data if exist otherwise set to the one in env
+        //     // get currency, withdrawalCoins, maxWithdrawalLimit, minWithdrawalLimit and withdrawalCommomDifference from config data if exist otherwise set to the one in env
 
-            // get all config
-            const config = await Config.find({});
+        //     // get all config
+        //     const config = await Config.find({});
 
-            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
+        //     const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
 
-            const tradeCurrency = config && config.length >= 1 && config[0].tradeCurrency ? config[0].tradeCurrency : (process.env.TRADE_CURRENCY).toUpperCase();
+        //     const tradeCurrency = config && config.length >= 1 && config[0].tradeCurrency ? config[0].tradeCurrency : (process.env.TRADE_CURRENCY).toUpperCase();
             
-            const withdrawalCoins = config && config.length >= 1 && config[0].withdrawalCoins ? config[0].withdrawalCoins : resolveWithdrawalFactors()
+        //     const withdrawalCoins = config && config.length >= 1 && config[0].withdrawalCoins ? config[0].withdrawalCoins : resolveWithdrawalFactors()
 
-            const withdrawalFactors = config && config.length >= 1 && config[0].withdrawalFactors ? config[0].withdrawalFactors : resolveArr(process.env.WITHDRAWAL_COINS);
+        //     const withdrawalFactors = config && config.length >= 1 && config[0].withdrawalFactors ? config[0].withdrawalFactors : resolveArr(process.env.WITHDRAWAL_COINS);
             
-            const pendingWithdrawalDuration = config && config.length >= 1 && config[0].pendingWithdrawalDuration ? config[0].pendingWithdrawalDuration : resolveArr(process.env.PENDING_WITHDRAWAL_DURATION);
+        //     const pendingWithdrawalDuration = config && config.length >= 1 && config[0].pendingWithdrawalDuration ? config[0].pendingWithdrawalDuration : resolveArr(process.env.PENDING_WITHDRAWAL_DURATION);
 
-            if(!data.amount || !data.walletAddress){
-                return res.status(400).json({ status: false, msg: "All fields are required"});
-            }
+        //     if(!data.amount || !data.walletAddress){
+        //         return res.status(400).json({ status: false, msg: "All fields are required"});
+        //     }
 
-            // validate
-            if(!data.coin){
-                return res.status(400).json({ status: false, msg: "Please select a coin"});
-            }
+        //     // validate
+        //     if(!data.coin){
+        //         return res.status(400).json({ status: false, msg: "Please select a coin"});
+        //     }
 
-            // check if coin selected is valid
-            if(!withdrawalCoins.includes(data.coin)){
-                return res.status(400).json({ status: false, msg: "Unsupported coin"});
-            }
+        //     // check if coin selected is valid
+        //     if(!withdrawalCoins.includes(data.coin)){
+        //         return res.status(400).json({ status: false, msg: "Unsupported coin"});
+        //     }
             
-            if(!withdrawalFactors.includes(data.amount)){
-                return res.status(400).json({ status: false, msg: "Invalid amount"});
-            }
+        //     if(!withdrawalFactors.includes(data.amount)){
+        //         return res.status(400).json({ status: false, msg: "Invalid amount"});
+        //     }
 
-            // get all Withdrawal hx, and check if the user has a pending transaction
-            let hasPendingTxn = false
-            const withdrawals = await Withdrawal.find({})
-            for(let withdrawal of withdrawals){
-                if(withdrawal.userId.toString() === userId.toString()){
-                    if(withdrawal.status === 'pending'){
-                        hasPendingTxn = true
-                    }
-                }
-            }
+        //     // get all Withdrawal hx, and check if the user has a pending transaction
+        //     let hasPendingTxn = false
+        //     const withdrawals = await Withdrawal.find({})
+        //     for(let withdrawal of withdrawals){
+        //         if(withdrawal.userId.toString() === userId.toString()){
+        //             if(withdrawal.status === 'pending'){
+        //                 hasPendingTxn = true
+        //             }
+        //         }
+        //     }
 
-            // amount requested for should not be more than their account total balance
-            const user = await User.findOne({_id: userId});
+        //     // amount requested for should not be more than their account total balance
+        //     const user = await User.findOne({_id: userId});
 
-            if(data.amount > user.amount){
-                return res.status(400).json({ status: false, msg: "Insulficient balance"});
-            }
+        //     if(data.amount > user.amount){
+        //         return res.status(400).json({ status: false, msg: "Insulficient balance"});
+        //     }
 
-            else if(hasPendingTxn){
-                return res.status(400).json({ status: false, msg: "You have a pending transaction"});
-            }
+        //     else if(hasPendingTxn){
+        //         return res.status(400).json({ status: false, msg: "You have a pending transaction"});
+        //     }
 
-            else{
-                // save this data in Withdrawal database
-                const newData_ = new Withdrawal({
-                    userId,              
-                    amount: (data.amount).toFixed(8),
-                    walletAddress: data.walletAddress,
-                    coin: data.coin,
-                    status: 'pending',
-                    currency,
-                    convertedAmount,
-                    tradeCurrency
-                })
+        //     else{
+        //         // save this data in Withdrawal database
+        //         const newData_ = new Withdrawal({
+        //             userId,              
+        //             amount: (data.amount).toFixed(8),
+        //             walletAddress: data.walletAddress,
+        //             coin: data.coin,
+        //             status: 'pending',
+        //             currency,
+        //             convertedAmount,
+        //             tradeCurrency
+        //         })
 
-                // remove the amount from the user's account balace
-                await User.findByIdAndUpdate({_id: userId}, {$set: {
-                    amount: (user.amount - data.amount).toFixed(8)
-                }});
+        //         // remove the amount from the user's account balace
+        //         await User.findByIdAndUpdate({_id: userId}, {$set: {
+        //             amount: (user.amount - data.amount).toFixed(8)
+        //         }});
 
-                const newData = await newData_.save();
+        //         const newData = await newData_.save();
 
-                // save to Transactions hx
-                const NewTransactionHx = new Transactions({
-                    type: 'withdrawal',
-                    amount: data.amount.toFixed(8),
-                    status: 'pending',
-                    currency,
-                    walletAddress: data.walletAddress,
-                    coin: data.coin,
-                    userId,
-                    convertedAmount,
-                    tradeCurrency,
-                    transactionId: newData._id
-                })
-                await NewTransactionHx.save()
+        //         // save to Transactions hx
+        //         const NewTransactionHx = new Transactions({
+        //             type: 'withdrawal',
+        //             amount: data.amount.toFixed(8),
+        //             status: 'pending',
+        //             currency,
+        //             walletAddress: data.walletAddress,
+        //             coin: data.coin,
+        //             userId,
+        //             convertedAmount,
+        //             tradeCurrency,
+        //             transactionId: newData._id
+        //         })
+        //         await NewTransactionHx.save()
                 
-                const withdrawalData = await Withdrawal.findOne({_id: newData.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
+        //         const withdrawalData = await Withdrawal.findOne({_id: newData.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
 
-                // senf email to admin
-                const text = `
-                    <div> <span style="font-weight: bold">${user.username}</span> just placed a Withdrawal Request </div>
-                    <br />
-                    <br />
-                    <div> Amount: ${data.amount.toFixed(4)} ${currency} </div>
-                    <br />
-                    <div> USD: ${convertedAmount} ${tradeCurrency} </div>
-                    <br />
-                    <div> Wallet: ${NewTransactionHx.walletAddress} </div>
-                    <br />
-                    <div> Coin: ${NewTransactionHx.coin} </div>
-                    <br />
-                    <div> Transaction Id: ${ newData._id} </div>
-                    <br />
-                    <div> Date: ${NewTransactionHx.createdAt} </div>
-                    <br />
-                    <div>
-                        <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL}">Click to Resolve</a>
-                    </div>
+        //         // senf email to admin
+        //         const text = `
+        //             <div> <span style="font-weight: bold">${user.username}</span> just placed a Withdrawal Request </div>
+        //             <br />
+        //             <br />
+        //             <div> Amount: ${data.amount.toFixed(4)} ${currency} </div>
+        //             <br />
+        //             <div> USD: ${convertedAmount} ${tradeCurrency} </div>
+        //             <br />
+        //             <div> Wallet: ${NewTransactionHx.walletAddress} </div>
+        //             <br />
+        //             <div> Coin: ${NewTransactionHx.coin} </div>
+        //             <br />
+        //             <div> Transaction Id: ${ newData._id} </div>
+        //             <br />
+        //             <div> Date: ${NewTransactionHx.createdAt} </div>
+        //             <br />
+        //             <div>
+        //                 <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL}">Click to Resolve</a>
+        //             </div>
 
-                `
-                const email_data = {
-                    from: `SmartEarners <${process.env.EMAIL_USER}>`,
-                    to: ["foycalsystem@gmail.com", process.env.EMAIL_USER],
-                    subject: 'New Withdrawal Request',
-                    html: text
-                }
+        //         `
+        //         const email_data = {
+        //             from: `SmartEarners <${process.env.EMAIL_USER}>`,
+        //             to: ["foycalsystem@gmail.com", process.env.EMAIL_USER],
+        //             subject: 'New Withdrawal Request',
+        //             html: text
+        //         }
 
-                // mailgunSetup.messages().send(email_data, (err, body)=>{
-                //     if(err){
-                //         return res.status(400).json({ status: true, msg: err.message})
-                //     }
-                // })
+        //         // mailgunSetup.messages().send(email_data, (err, body)=>{
+        //         //     if(err){
+        //         //         return res.status(400).json({ status: true, msg: err.message})
+        //         //     }
+        //         // })
                 
-                return res.status(200).json({ status: true, msg: `Pending transaction, will be confirmed within ${pendingWithdrawalDuration} hours`, data: withdrawalData})
-            }
-        }
+        //         return res.status(200).json({ status: true, msg: `Pending transaction, will be confirmed within ${pendingWithdrawalDuration} hours`, data: withdrawalData})
+        //     }
+        // }
 
-        catch(err){
-            return res.status(500).json({ status: false, msg: err.message})
-        }
+        // catch(err){
+        //     return res.status(500).json({ status: false, msg: err.message})
+        // }
     },
 
     rejected: async (req, res)=> {
@@ -281,97 +282,98 @@ module.exports ={
     },
 
     confirm: async (req, res)=> {
-        try{
+        return res.status(400).json({ status: false, msg: 'check back in few minutes'})
+        // try{
             
-            // get all config
-            const config = await Config.find({});
+        //     // get all config
+        //     const config = await Config.find({});
             
-            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
+        //     const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : (process.env.NATIVE_CURRENCY).toUpperCase();
 
 
-            // get withdrawal id
-            const {id} = req.params
+        //     // get withdrawal id
+        //     const {id} = req.params
             
-              // validate
-            if(!mongoose.Types.ObjectId.isValid(id)){
-                return res.status(400).json({status: false, msg: "Transaction not found"})
-            }
+        //       // validate
+        //     if(!mongoose.Types.ObjectId.isValid(id)){
+        //         return res.status(400).json({status: false, msg: "Transaction not found"})
+        //     }
             
-            // get this withdrawal hx from the database
-            const withdrawalHx = await Withdrawal.findOne({_id: id})
+        //     // get this withdrawal hx from the database
+        //     const withdrawalHx = await Withdrawal.findOne({_id: id})
 
-            // find the user
-            const user = await User.findOne({_id: withdrawalHx.userId})
+        //     // find the user
+        //     const user = await User.findOne({_id: withdrawalHx.userId})
 
-            if(!withdrawalHx){
-                return res.status(400).json({status: false, msg: "Transaction not found"})
-            }
+        //     if(!withdrawalHx){
+        //         return res.status(400).json({status: false, msg: "Transaction not found"})
+        //     }
 
-            if(withdrawalHx.status === 'rejected'){
-                return res.status(400).json({ status: false, msg: "Transaction was rejected, reach the client to resend request"});
-            }
+        //     if(withdrawalHx.status === 'rejected'){
+        //         return res.status(400).json({ status: false, msg: "Transaction was rejected, reach the client to resend request"});
+        //     }
 
-            else if(withdrawalHx.status === 'confirmed'){
-                return res.status(400).json({ status: false, msg: "Transaction already confirmed"});
-            }
+        //     else if(withdrawalHx.status === 'confirmed'){
+        //         return res.status(400).json({ status: false, msg: "Transaction already confirmed"});
+        //     }
             
-            else{
-                // update the Withdrawal database and change the status to confirmed
-                await Withdrawal.findByIdAndUpdate({_id: id}, {$set: {
-                    status: 'confirmed',
-                }}, {new: true})
+        //     else{
+        //         // update the Withdrawal database and change the status to confirmed
+        //         await Withdrawal.findByIdAndUpdate({_id: id}, {$set: {
+        //             status: 'confirmed',
+        //         }}, {new: true})
 
-                // find and update transaction hx the transactionId
-                await Transactions.findOneAndUpdate({transactionId: id}, {$set: {
-                    status: 'successful'
-                }});
+        //         // find and update transaction hx the transactionId
+        //         await Transactions.findOneAndUpdate({transactionId: id}, {$set: {
+        //             status: 'successful'
+        //         }});
 
-                withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
+        //         withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
 
 
-                // senf email to admin
-                const text = `
+        //         // senf email to admin
+        //         const text = `
     
-                    <div> Your Withdrawal Request was Confirmed </div>
-                    <br />
-                    <br />
-                    <div> Amount: ${withdrawalData.amount} ${currency} <div/ >
-                    <br />
-                    <div> Wallet: ${withdrawalData.walletAddress} <div/ >
-                    <br />
-                    <div> Coin: ${withdrawalData.coin} <div/ >
-                    <br />
-                    <div> Transaction Id: ${id} <div/ >
-                    <br />
-                    <div> Date: ${withdrawalData.createdAt} </div>
-                    <br />
-                    <div>
-                        <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL2}">Click to View</a>
-                    </div>
-                    <br />
-                    <div> SmartEarners </div>
-                    <div style="font-style: italic; font-weight: bold"> Invest and Earn with us </div>
+        //             <div> Your Withdrawal Request was Confirmed </div>
+        //             <br />
+        //             <br />
+        //             <div> Amount: ${withdrawalData.amount} ${currency} <div/ >
+        //             <br />
+        //             <div> Wallet: ${withdrawalData.walletAddress} <div/ >
+        //             <br />
+        //             <div> Coin: ${withdrawalData.coin} <div/ >
+        //             <br />
+        //             <div> Transaction Id: ${id} <div/ >
+        //             <br />
+        //             <div> Date: ${withdrawalData.createdAt} </div>
+        //             <br />
+        //             <div>
+        //                 <a style="display:inline-block; background: ${config[0].brandColorA}; text-align:center; padding: 15px; color: #fff; font-weight: 600" href="${URL2}">Click to View</a>
+        //             </div>
+        //             <br />
+        //             <div> SmartEarners </div>
+        //             <div style="font-style: italic; font-weight: bold"> Invest and Earn with us </div>
 
-                `
+        //         `
 
-                const email_data = {
-                    from: `SmartEarners <${process.env.EMAIL_USER}>`,
-                    to: user.email,
-                    subject: 'Withdrawal Request',
-                    html: text
-                }
+        //         const email_data = {
+        //             from: `SmartEarners <${process.env.EMAIL_USER}>`,
+        //             to: user.email,
+        //             subject: 'Withdrawal Request',
+        //             html: text
+        //         }
 
-                // mailgunSetup.messages().send(email_data, (err, body)=>{
-                //     if(err){
-                //         return res.status(400).json({ status: true, msg: err.message})
-                //     }
-                // })            
-                return res.status(200).json({ status: true, msg: `Transaction confirmed`, data: withdrawalData})
-            }
-        }
-        catch(err){
-            return res.status(500).json({ status: false, msg:err.message})
-        }
+        //         // mailgunSetup.messages().send(email_data, (err, body)=>{
+        //         //     if(err){
+        //         //         return res.status(400).json({ status: true, msg: err.message})
+        //         //     }
+        //         // })            
+        //         return res.status(200).json({ status: true, msg: `Transaction confirmed`, data: withdrawalData})
+        //     }
+        // }
+        // catch(err){
+        //     return res.status(500).json({ status: false, msg:err.message})
+        // }
     },
 
     getAllTransactions: async (req, res)=> {

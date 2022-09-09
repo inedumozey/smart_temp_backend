@@ -100,118 +100,119 @@ module.exports ={
     },
 
     payUser: async (req, res)=> {
-        try{
-            const userId = req.user
+        return res.status(400).json({ status: false, msg: 'check back in few minutes'})
+        // try{
+        //     const userId = req.user
 
-            // sanitize all elements from the client, incase of fodgery
-            const data = {
-                amount: Number(DOMPurify.sanitize(req.body.amount)),
-                accountNumber: DOMPurify.sanitize(req.body.accountNumber),
-            }
+        //     // sanitize all elements from the client, incase of fodgery
+        //     const data = {
+        //         amount: Number(DOMPurify.sanitize(req.body.amount)),
+        //         accountNumber: DOMPurify.sanitize(req.body.accountNumber),
+        //     }
 
-            if(!data.amount || !data.accountNumber){
-                return res.status(400).json({ status: false, msg: "All fields are required"})
-            }
+        //     if(!data.amount || !data.accountNumber){
+        //         return res.status(400).json({ status: false, msg: "All fields are required"})
+        //     }
 
-            // check transfer factors
+        //     // check transfer factors
 
-            // resolve transfer factors incase it's not in the database
-            const resolveTransferFactors =()=>{
-                let factors=[]
-                const maxTransferLimit = process.env.MAX_TRANSFER_LIMIT ? Number(process.env.MAX_TRANSFER_LIMIT) : 100000;
-                const minTransferLimit = process.env.MIN_TRANSFER_LIMIT ? Number(process.env.MIN_TRANSFER_LIMIT) : 5000;
-                const transferCommonDiff = process.env.TRANSFER_COMMON_DIFF ? Number(process.env.TRANSFER_COMMON_DIFF) : 5000;
+        //     // resolve transfer factors incase it's not in the database
+        //     const resolveTransferFactors =()=>{
+        //         let factors=[]
+        //         const maxTransferLimit = process.env.MAX_TRANSFER_LIMIT ? Number(process.env.MAX_TRANSFER_LIMIT) : 100000;
+        //         const minTransferLimit = process.env.MIN_TRANSFER_LIMIT ? Number(process.env.MIN_TRANSFER_LIMIT) : 5000;
+        //         const transferCommonDiff = process.env.TRANSFER_COMMON_DIFF ? Number(process.env.TRANSFER_COMMON_DIFF) : 5000;
 
-                for(let i=minTransferLimit; i<=maxTransferLimit; i=i+transferCommonDiff){
-                    factors.push(i)
-                }
-                return factors
-            }
+        //         for(let i=minTransferLimit; i<=maxTransferLimit; i=i+transferCommonDiff){
+        //             factors.push(i)
+        //         }
+        //         return factors
+        //     }
 
-            // get currency, maxTransferLimit, minTransferLimit and transferCommonDifference from config data if exist otherwise set to the one in env
-            // get all config
-            const config = await Config.find({});
+        //     // get currency, maxTransferLimit, minTransferLimit and transferCommonDifference from config data if exist otherwise set to the one in env
+        //     // get all config
+        //     const config = await Config.find({});
 
-            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+        //     const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
 
-            const transferFactors = config && config.length >= 1 && config[0].transferFactors ? config[0].transferFactors : resolveTransferFactors();
+        //     const transferFactors = config && config.length >= 1 && config[0].transferFactors ? config[0].transferFactors : resolveTransferFactors();
 
-            // check for transfer factors
-            if(!transferFactors.includes(data.amount)){
-                return res.status(400).json({ status: false, msg: "Invalid amount"});
-            }
+        //     // check for transfer factors
+        //     if(!transferFactors.includes(data.amount)){
+        //         return res.status(400).json({ status: false, msg: "Invalid amount"});
+        //     }
 
-             // get sender's total amount
-            const user = await User.findOne({_id: userId})
-            if(!user){
-                return res.status(400).json({ status: false, msg: "User not found!"})
-            }
+        //      // get sender's total amount
+        //     const user = await User.findOne({_id: userId})
+        //     if(!user){
+        //         return res.status(400).json({ status: false, msg: "User not found!"})
+        //     }
 
-            // check sender's amount, if less than what he is transfering, send error
-            if(Number(data.amount) >Number(user.amount)){
-                return res.status(400).json({ status: false, msg: "Insufficient balance"})
-            }
+        //     // check sender's amount, if less than what he is transfering, send error
+        //     if(Number(data.amount) >Number(user.amount)){
+        //         return res.status(400).json({ status: false, msg: "Insufficient balance"})
+        //     }
 
-            const rUser = await User.findOne({accountNumber: data.accountNumber});
+        //     const rUser = await User.findOne({accountNumber: data.accountNumber});
 
-            // validate the account number
-            if(!rUser){
-                return res.status(400).json({ status: false, msg: "Invalid account number"})
-            };
+        //     // validate the account number
+        //     if(!rUser){
+        //         return res.status(400).json({ status: false, msg: "Invalid account number"})
+        //     };
 
-            // check to be sure account number does not belongs to the sender
-            if(rUser.accountNumber === user.accountNumber){
-                return res.status(400).json({ status: false, msg: "Owner's account number"})
-            }
+        //     // check to be sure account number does not belongs to the sender
+        //     if(rUser.accountNumber === user.accountNumber){
+        //         return res.status(400).json({ status: false, msg: "Owner's account number"})
+        //     }
  
-            //.........................................................
+        //     //.........................................................
 
-            // handle transactions
-            // 1. add the amount to the receiver's account
-            await User.findByIdAndUpdate({_id: rUser.id}, {$set: {
-                amount: (rUser.amount + data.amount).toFixed(8)
-            }}, {new: true})
+        //     // handle transactions
+        //     // 1. add the amount to the receiver's account
+        //     await User.findByIdAndUpdate({_id: rUser.id}, {$set: {
+        //         amount: (rUser.amount + data.amount).toFixed(8)
+        //     }}, {new: true})
 
-            // 2. remove the amount from sender's account
-            await User.findByIdAndUpdate({_id: userId}, {$set: {
-                amount: (user.amount - data.amount).toFixed(8)
-            }}, {new: true})
+        //     // 2. remove the amount from sender's account
+        //     await User.findByIdAndUpdate({_id: userId}, {$set: {
+        //         amount: (user.amount - data.amount).toFixed(8)
+        //     }}, {new: true})
 
-            // 3 save data into internal transfer database (transaction) of the sender            
+        //     // 3 save data into internal transfer database (transaction) of the sender            
 
-            const newInternalTransfer = new InternalTransfer({
-                sender: userId,
-                receiver: rUser.id,
-                accountNumber: data.accountNumber,
-                amount: data.amount.toFixed(8),
-                currency,
-                status: "successful"
-            })
+        //     const newInternalTransfer = new InternalTransfer({
+        //         sender: userId,
+        //         receiver: rUser.id,
+        //         accountNumber: data.accountNumber,
+        //         amount: data.amount.toFixed(8),
+        //         currency,
+        //         status: "successful"
+        //     })
 
-            const newInternalTransfer_ = await newInternalTransfer.save();
+        //     const newInternalTransfer_ = await newInternalTransfer.save();
             
-            //save to transaction hx database
-            const NewTransactionHx = new Transactions({
-                type: 'transfer',
-                sender: userId,
-                receiver: rUser.id,
-                accountNumber: data.accountNumber,
-                amount: data.amount.toFixed(8),
-                currency,
-                status: "successful",
-                transactionId: newInternalTransfer_._id
-            })
+        //     //save to transaction hx database
+        //     const NewTransactionHx = new Transactions({
+        //         type: 'transfer',
+        //         sender: userId,
+        //         receiver: rUser.id,
+        //         accountNumber: data.accountNumber,
+        //         amount: data.amount.toFixed(8),
+        //         currency,
+        //         status: "successful",
+        //         transactionId: newInternalTransfer_._id
+        //     })
 
-            await NewTransactionHx.save();
+        //     await NewTransactionHx.save();
 
-            const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']});
+        //     const data_ = await InternalTransfer.findOne({_id: newInternalTransfer_.id}).populate({path: 'sender', select: ['_id', 'username', 'email']}).populate({path: 'receiver', select: ['_id', 'username', 'email']});
 
 
-            return res.status(200).json({ status: true, msg: `Transaction successful`, data: data.amount}) 
-        }
-        catch(err){
-            return res.status(500).json({ status: false, msg: err.message})
-        }
+        //     return res.status(200).json({ status: true, msg: `Transaction successful`, data: data.amount}) 
+        // }
+        // catch(err){
+        //     return res.status(500).json({ status: false, msg: err.message})
+        // }
     },
 
     getAllTransactions: async (req, res)=> {

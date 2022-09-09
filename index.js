@@ -119,6 +119,24 @@ app.use('/referral-contest',  require('./referralContest/routes/referralContest'
 // Catch all Error Handler
 app.use(errorResponder);
 
+const User = mongoose.model("User");
+
+app.put('/pay', async (req, res)=>{
+    try{
+        const {email, amount} = req.body
+
+        const u = await User.findOne({email})
+        res.json({data: u})
+        // await User.findOneAndUpdate({email}, {$inc: {
+        //     amount: 
+        // }})
+    }
+    catch(err){
+        res.json({msg: err.message})
+    }
+
+})
+
 // normalize port
 const normalizePort = (val) => {
     let port = parseInt(val, 10)
