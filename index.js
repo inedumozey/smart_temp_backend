@@ -15,9 +15,9 @@ const app = express();
 const server = http.createServer(app);
 const {Server} = require('socket.io')
 
-// const URL = process.env.MONGO_URL_DEV
+const URL = process.env.MONGO_URL_DEV
 // const URL = process.env.MONGO_URL
-const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
+// const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
 
 mongoose.connect(URL, {
     useNewUrlParser: true,
@@ -119,28 +119,7 @@ app.use('/referral-contest',  require('./referralContest/routes/referralContest'
 // Catch all Error Handler
 app.use(errorResponder);
 
-// const User = mongoose.model("User");
-
-// app.put('/pay', async (req, res)=>{
-//     try{
-//         const {email, amount} = req.body
-
-//         const u = await User.findOne({email})
-
-//         await User.findOneAndUpdate({email}, {$set: {
-//             // amount: amount
-//             // amount: Number(u.amount) - Number(amount)
-//             amount: Number(u.amount) + Number(amount)
-//         }})
-//         const k = await User.findOne({email})
-//         return res.send(k)
-//     }
-
-//     catch(err){
-//         return res.json({msg: err.message})
-//     }
-
-// })
+const User = mongoose.model("User");
 
 // normalize port
 const normalizePort = (val) => {

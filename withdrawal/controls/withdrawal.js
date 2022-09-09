@@ -167,11 +167,11 @@ module.exports ={
                     html: text
                 }
 
-                // mailgunSetup.messages().send(email_data, (err, body)=>{
-                //     if(err){
-                //         return res.status(400).json({ status: true, msg: err.message})
-                //     }
-                // })
+                mailgunSetup.messages().send(email_data, (err, body)=>{
+                    if(err){
+                        return res.status(400).json({ status: true, msg: err.message})
+                    }
+                })
                 
                 return res.status(200).json({ status: true, msg: `Pending transaction, will be confirmed within ${pendingWithdrawalDuration} hours`, data: withdrawalData})
             }
@@ -361,11 +361,11 @@ module.exports ={
                     html: text
                 }
 
-                // mailgunSetup.messages().send(email_data, (err, body)=>{
-                //     if(err){
-                //         return res.status(400).json({ status: true, msg: err.message})
-                //     }
-                // })            
+                mailgunSetup.messages().send(email_data, (err, body)=>{
+                    if(err){
+                        return res.status(400).json({ status: true, msg: err.message})
+                    }
+                })            
                 return res.status(200).json({ status: true, msg: `Transaction confirmed`, data: withdrawalData})
             }
         }
