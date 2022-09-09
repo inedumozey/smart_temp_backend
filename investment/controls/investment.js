@@ -358,6 +358,7 @@ module.exports ={
                             lifespan: plan.lifespan,
                             returnPercentage: plan.returnPercentage,
                             rewards,
+                            currentBalance: (user.amount - data.amount).toFixed(8),
                             userId,
                             amount: data.amount.toFixed(8), // amount from form input, not the plan amount since the user can invest with any amount of money equal to or more than the master plan if he chooses master plan
                             currency,
@@ -454,6 +455,7 @@ module.exports ={
                             returnPercentage: plan.returnPercentage,
                             rewards,
                             userId,
+                            currentBalance: (user.amount - plan.amount).toFixed(8),
                             amount: plan.amount.toFixed(8),
                             currency,
                         }
@@ -595,7 +597,8 @@ module.exports ={
                         // update the investment database, 
                         await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
                             rewarded: true,
-                            isActive: false
+                            isActive: false,
+                            currentBalance: (users.amount + maturedInvestment.rewards).toFixed(8)
                         }}, {new: true})
                     }
                     
@@ -609,7 +612,42 @@ module.exports ={
 
         }
         catch(err){
-            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+            return res.status(500).json({ status: false, msg: err.message})
+        }
+    },
+
+    resolveManually: async (req, res)=> {
+        try{
+            const {id} = req.params;
+            // update the investment database, 
+            const investment = await Investment.findOne({_id: id});
+            // update the user
+            const user = await User.findOne({_id: investment.userId})
+
+            if(investment.isActive){
+                await Investment.findOneAndUpdate({_id: id}, {$set: {
+                    rewarded: true,
+                    isActive: false,
+                    currentBalance: (user.amount + investment.rewards).toFixed(8)
+                }}, {new: true})
+    
+                if(user.active == 1 || user.active ==2){
+                    // update the users account with the amount he invested with and the rewards
+                    await User.findOneAndUpdate({_id: investment.userId}, {$set: {
+                        active: user.active - 1,
+                        amount: (user.amount + investment.rewards).toFixed(8)
+                    }}, {new: true})
+                }
+                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+                return res.status(200).json({ status: true, msg: "successful", data: investments})  
+            }
+            else{
+                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+                return res.status(200).json({ status: true, msg: "successful", data: investments}) 
+            }
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.message})
         }
     },
 
@@ -628,7 +666,7 @@ module.exports ={
                 }
             }
 
-            const data = await Investment.find({_id: ids}).populate({path: 'userId', select: ['_id', 'email', 'username']}).sort({updatedAt: -1});
+            const data = await Investment.find({_id: ids}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({updatedAt: -1});
 
             return res.status(200).send({status: true, msg: 'Successful', data})       
         }
@@ -642,14 +680,11 @@ module.exports ={
             
             const userId = req.user;
 
-            // get all investment hx
-            const txns = await Investment.find({});
-
             // get the loggeduser to check if he is the admin
             const loggeduser = await User.findOne({_id: userId})
             
             if(loggeduser.isAdmin){
-                const data = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'username']}).sort({updatedAt: -1});
+                const data = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
                 
                 return res.status(200).send({status: true, msg: 'Successful', data})
             }
@@ -694,5 +729,4 @@ module.exports ={
             return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
         }
     },
-    
 }

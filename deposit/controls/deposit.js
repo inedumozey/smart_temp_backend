@@ -332,6 +332,19 @@ module.exports ={
         }
     },
 
+    getAllDeposits_users: async (req, res)=> {
+        try{
+            const userId = req.user
+
+            const txns = await Deposit.find({userId}).populate({path: 'userId', select: ['_id', 'email', 'username']}).sort({updatedAt: -1});
+            return res.status(200).json({ status: true, msg: 'successful', data: txns})
+
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.response.data})
+        }
+    },
+
     resolve: async (req, res)=> {
         try{
             const {id} = req.params;

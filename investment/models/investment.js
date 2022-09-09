@@ -27,6 +27,10 @@ const schema = new mongoose.Schema(
             type: Number,
             required: true,
         },
+        currentBalance: {
+            type: Number,
+            required: true,
+        },
         rewarded: {
             type: Boolean,
             default: false

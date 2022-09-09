@@ -12,9 +12,12 @@ route.delete("/delete-plan/:id", adminAuth, investment.deletePlan);
 route.delete("/delete-all-Plans", adminAuth, investment.deleteAllPlans);
 
 route.get("/get-all-investments", verifiedUserAuth, investment.getAllInvestments);
+route.get("/get-all-investments-admin", adminAuth, investment.getAllInvestments_admin);
 route.get("/get-investment/:id", verifiedUserAuth, investment.getInvestment);
 route.post("/invest/:id", verifiedUserAuth, investment.invest);
 route.get("/resolve", investment.resolve);
+route.put("/resolve-manual/:id", adminAuth, investment.resolveManually);
+
 
 
 

@@ -4,7 +4,8 @@ const { adminAuth, verifiedUserAuth } = require("../../auth/middlewares/auth")
 
 const route = express.Router()
 
-route.get("/get-all-transactions", verifiedUserAuth, withdrawal.getAllTransactions);
+route.get("/get-all-transactions", adminAuth, withdrawal.getAllTransactions);
+route.get("/get-all-transactions-users", verifiedUserAuth, withdrawal.getAllTransactions_users);
 route.get("/get-transaction/:id", verifiedUserAuth, withdrawal.getTransaction);
 route.post("/request", verifiedUserAuth, withdrawal.request);
 route.get("/rejected/:id", adminAuth, withdrawal.rejected);

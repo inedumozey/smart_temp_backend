@@ -167,11 +167,11 @@ module.exports ={
                     html: text
                 }
 
-                mailgunSetup.messages().send(email_data, (err, body)=>{
-                    if(err){
-                        return res.status(400).json({ status: true, msg: err.message})
-                    }
-                })
+                // mailgunSetup.messages().send(email_data, (err, body)=>{
+                //     if(err){
+                //         return res.status(400).json({ status: true, msg: err.message})
+                //     }
+                // })
                 
                 return res.status(200).json({ status: true, msg: `Pending transaction, will be confirmed within ${pendingWithdrawalDuration} hours`, data: withdrawalData})
             }
@@ -361,12 +361,11 @@ module.exports ={
                     html: text
                 }
 
-                mailgunSetup.messages().send(email_data, (err, body)=>{
-                    if(err){
-                        return res.status(400).json({ status: true, msg: err.message})
-                    }
-                })
-            
+                // mailgunSetup.messages().send(email_data, (err, body)=>{
+                //     if(err){
+                //         return res.status(400).json({ status: true, msg: err.message})
+                //     }
+                // })            
                 return res.status(200).json({ status: true, msg: `Transaction confirmed`, data: withdrawalData})
             }
         }
@@ -377,29 +376,26 @@ module.exports ={
 
     getAllTransactions: async (req, res)=> {
         try{
-            const userId = req.user
             // get all withdrawal hx from the database
             const withdrawalHxs = await Withdrawal.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'isAdmin']}).sort({updatedAt: -1});
 
-            const loggedUser = await User.findOne({_id: userId})
-
-            // if loggedUser is admin, send all withdrawalHx
-            if(loggedUser.isAdmin){
-                return res.status(200).json({status: true, msg: "success", data: withdrawalHxs})
-            }
-
-            // if loggedUser is not the admin, only send his/her own transaction
-            let userTxns = [];
-            for(let withdrawalHx of withdrawalHxs){
-                if(withdrawalHx.userId._id.toString() === userId.toString()){
-                    userTxns.push(withdrawalHx)
-                }
-            }
-
-            return res.status(200).json({status: true, msg: "success", data: userTxns})
+            return res.status(200).json({status: true, msg: "success", data: withdrawalHxs})
         }
         catch(err){
             return res.status(500).json({ status: false, msg:"Server error, please contact customer support"})
+        }
+    },
+
+    getAllTransactions_users: async (req, res)=> {
+        try{
+            const userId = req.user
+            // get all withdrawal hx from the database
+            const withdrawalHxs = await Withdrawal.find({userId}).populate({path: 'userId', select: ['_id', 'email', 'username', 'isAdmin']}).sort({updatedAt: -1});
+
+            return res.status(200).json({status: true, msg: "success", data: withdrawalHxs})
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg:err.message});
         }
     },
 
@@ -439,5 +435,5 @@ module.exports ={
         catch(err){
             return res.status(500).json({ status: false, msg:"Server error, please contact customer support"})
         }
-    },
+    }
 }
