@@ -550,6 +550,77 @@ module.exports ={
     resolve: async (req, res)=> {
         try{
           
+            // // get all investments
+            // const investments = await Investment.find({});
+
+            // // check if there are investment
+            // let maturedInvestments = []
+            // let activeInvestment = []
+            // if(!investments){
+            //     return res.status(200).json({ status: true, msg: "No any investment made"})
+            // }
+            
+
+            // // loop through investments
+            // for(let investment of investments){
+            //     const currentTime = new Date().getTime() / 1000 // seconds
+
+            //     const createTime = new Date(investment.createdAt).getTime() / 1000 // seconds
+                
+            //     const investmentLifespan = Number(investment.lifespan)
+
+            //     // check for all active investment that have matured
+            //     if( currentTime - createTime >= investmentLifespan && investment.isActive){
+            //         maturedInvestments.push(investment)
+
+            //     }
+            //     else{
+            //         activeInvestment.push(investment)
+            //     }
+            // }
+                        
+            // // fetch the users with these maturedInvestments and update their account balance
+            // if(maturedInvestments.length > 0){
+            //     for(let maturedInvestment of maturedInvestments){
+
+            //         // get the users with these investments
+            //         const userId = maturedInvestment.userId.toString();
+            //         const users = await User.findOne({_id: userId})
+
+            //         if(users.active == 1 || users.active ==2){
+            //             // update the users account with the amount he invested with and the rewards
+            //             await User.updateMany({_id: userId}, {$set: {
+            //                 active: users.active - 1,
+            //                 amount: (users.amount + maturedInvestment.rewards).toFixed(8)
+            //             }}, {new: true})
+
+            //             // update the investment database, 
+            //             await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
+            //                 rewarded: true,
+            //                 isActive: false,
+            //                 currentBalance: (users.amount + maturedInvestment.rewards).toFixed(8)
+            //             }}, {new: true})
+            //         }
+                    
+            //     }
+
+            //     return res.status(200).json({ status: true, msg: "successful"})  
+
+            // }else{
+            //     return res.status(200).json({ status: true, msg: "successful"})  
+            // }
+
+            return res.status(200).json({ status: true, msg: "successful"});
+
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.message})
+        }
+    },
+
+    resolve_In: async (req, res)=> {
+        try{
+          
             // get all investments
             const investments = await Investment.find({});
 

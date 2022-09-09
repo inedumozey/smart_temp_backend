@@ -16,10 +16,7 @@ route.get("/get-all-investments-admin", adminAuth, investment.getAllInvestments_
 route.get("/get-investment/:id", verifiedUserAuth, investment.getInvestment);
 route.post("/invest/:id", verifiedUserAuth, investment.invest);
 route.get("/resolve", investment.resolve);
+route.get("/resolve-in", investment.resolve_In);
 route.put("/resolve-manual/:id", adminAuth, investment.resolveManually);
-
-
-
-
 
 module.exports = route
