@@ -643,21 +643,31 @@ module.exports ={
                 // check for all active investment that have matured
                 if( currentTime - createTime >= investmentLifespan && investment.isActive){
                     maturedInvestments.push(investment)
-                    // console.log(maturedInvestments)
 
                 }
                 else{
                     activeInvestment.push(investment)
                 }
             }
-            
+                        
             // fetch the users with these maturedInvestments and update their account balance
             if(maturedInvestments.length > 0){
                 for(let maturedInvestment of maturedInvestments){
 
                     // get the users with these investments
                     const userId = maturedInvestment.userId.toString();
-                    const users = await User.findOne({userId})
+                    const users = await User.findOne({_id: userId})
+
+                    await User.updateMany({_id: userId}, {$set: {
+                        amount: (users.amount + maturedInvestment.rewards).toFixed(8)
+                    }}, {new: true})
+
+                    // update the investment database, 
+                    await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
+                        rewarded: true,
+                        isActive: false,
+                        currentBalance: (users.amount + maturedInvestment.rewards).toFixed(8)
+                    }}, {new: true})
 
                     if(users.active == 1 || users.active ==2){
                         // update the users account with the amount he invested with and the rewards
@@ -665,18 +675,7 @@ module.exports ={
                             active: users.active - 1,
                         }}, {new: true})
                     }
-
-                    // update the investment database, 
-                    await Investment.findOneAndUpdate({_id: maturedInvestment.id}, {$set: {
-                        rewarded: true,
-                        isActive: false,
-                        // currentBalance: Number(users.amount + maturedInvestment.rewards).toFixed(8)
-                    }}, {new: true});
-
-                    //  update the users account with the amount he invested with and the rewards
-                     await User.updateMany({_id: userId}, {$set: {
-                        amount: Number(users.amount + maturedInvestment.rewards).toFixed(8)
-                    }}, {new: true})
+                                        
                 }
 
                 return res.status(200).json({ status: true, msg: "successful"})  

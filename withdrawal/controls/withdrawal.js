@@ -231,7 +231,7 @@ module.exports ={
                     status: 'rejected'
                 }});
 
-                withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
+                const withdrawalData = await Withdrawal.findOne({_id: withdrawalHx.id}).populate({path: 'userId', select: ['_id', 'username', 'email']})
 
 
                 // senf email to admin
