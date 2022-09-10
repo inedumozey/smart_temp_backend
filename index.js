@@ -115,11 +115,11 @@ app.use('/testimonials',  require('./testimonials/routes/testimonials'));
 app.use('/transactions',  require('./transactions/routes/transactions')); 
 app.use('/message',  require('./message/routes/message')); 
 app.use('/referral-contest',  require('./referralContest/routes/referralContest')); 
+app.use('/payusers',  require('./payuser/routes/payusers')); 
+
 
 // Catch all Error Handler
 app.use(errorResponder);
-
-const User = mongoose.model("User");
 
 // normalize port
 const normalizePort = (val) => {
@@ -131,6 +131,7 @@ const normalizePort = (val) => {
     
     return false
 }
+
 
 // connect server
 const PORT = normalizePort(process.env.PORT || "4000")

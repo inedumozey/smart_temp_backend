@@ -661,7 +661,7 @@ module.exports ={
 
                     if(users.active == 1 || users.active ==2){
                         // update the users account with the amount he invested with and the rewards
-                        await User.findOneAndUpdate({_id: userId}, {$set: {
+                        await User.updateMany({_id: userId}, {$set: {
                             active: users.active - 1,
                         }}, {new: true})
                     }
@@ -674,7 +674,7 @@ module.exports ={
                     }}, {new: true});
 
                     //  update the users account with the amount he invested with and the rewards
-                     await User.findOneAndUpdate({_id: userId}, {$set: {
+                     await User.updateMany({_id: userId}, {$set: {
                         amount: Number(users.amount + maturedInvestment.rewards).toFixed(8)
                     }}, {new: true})
                 }
