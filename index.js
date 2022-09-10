@@ -127,10 +127,13 @@ app.put('/pay', async (req, res)=>{
 
         const u = await User.findOne({email})
         res.json({data: u})
-        // await User.findOneAndUpdate({email}, {$inc: {
-        //     amount: 
-        // }})
+        await User.findOneAndUpdate({email}, {$sec: {
+            amount: amount
+        }})
+        const k = await User.findOne({email})
+        res.send(k)
     }
+
     catch(err){
         res.json({msg: err.message})
     }

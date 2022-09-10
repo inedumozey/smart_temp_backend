@@ -672,13 +672,13 @@ module.exports ={
                     await Investment.findOneAndUpdate({_id: maturedInvestment.id}, {$set: {
                         rewarded: true,
                         isActive: false,
-                        currentBalance: (users.amount + maturedInvestment.rewards).toFixed(8)
+                        currentBalance: Number(users.amount + maturedInvestment.rewards).toFixed(8)
                     }}, {new: true});
 
-                     // update the users account with the amount he invested with and the rewards
-                    //  await User.findOneAndUpdate({_id: userId}, {$set: {
-                    //     amount: Number(users.amount + maturedInvestment.rewards).toFixed(8)
-                    // }}, {new: true})
+                    //  update the users account with the amount he invested with and the rewards
+                     await User.findOneAndUpdate({_id: userId}, {$set: {
+                        amount: Number(users.amount + maturedInvestment.rewards).toFixed(8)
+                    }}, {new: true})
                 }
 
                 return res.status(200).json({ status: true, msg: "successful"})  
@@ -695,33 +695,34 @@ module.exports ={
 
     resolveManually: async (req, res)=> {
         try{
-            const {id} = req.params;
-            // update the investment database, 
-            const investment = await Investment.findOne({_id: id});
-            // update the user
-            const user = await User.findOne({_id: investment.userId})
+            return res.status(400).json({ status: falsse, msg: "check back in few minutes"}) 
+            // const {id} = req.params;
+            // // update the investment database, 
+            // const investment = await Investment.findOne({_id: id});
+            // // update the user
+            // const user = await User.findOne({_id: investment.userId})
 
-            if(investment.isActive){
-                await Investment.findOneAndUpdate({_id: id}, {$set: {
-                    rewarded: true,
-                    isActive: false,
-                    currentBalance: (user.amount + investment.rewards).toFixed(8)
-                }}, {new: true})
+            // if(investment.isActive){
+            //     await Investment.findOneAndUpdate({_id: id}, {$set: {
+            //         rewarded: true,
+            //         isActive: false,
+            //         currentBalance: (user.amount + investment.rewards).toFixed(8)
+            //     }}, {new: true})
     
-                if(user.active == 1 || user.active ==2){
-                    // update the users account with the amount he invested with and the rewards
-                    await User.findOneAndUpdate({_id: investment.userId}, {$set: {
-                        active: user.active - 1,
-                        amount: (user.amount + investment.rewards).toFixed(8)
-                    }}, {new: true})
-                }
-                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
-                return res.status(200).json({ status: true, msg: "successful", data: investments})  
-            }
-            else{
-                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
-                return res.status(200).json({ status: true, msg: "successful", data: investments}) 
-            }
+            //     if(user.active == 1 || user.active ==2){
+            //         // update the users account with the amount he invested with and the rewards
+            //         await User.findOneAndUpdate({_id: investment.userId}, {$set: {
+            //             active: user.active - 1,
+            //             amount: (user.amount + investment.rewards).toFixed(8)
+            //         }}, {new: true})
+            //     }
+            //     const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+            //     return res.status(200).json({ status: true, msg: "successful", data: investments})  
+            // }
+            // else{
+            //     const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+            //     return res.status(200).json({ status: true, msg: "successful", data: investments}) 
+            // }
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})
