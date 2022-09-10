@@ -236,316 +236,315 @@ module.exports ={
     },
 
     invest: async (req, res)=> {
-        return res.status(400).json({ status: false, msg: 'check back in few minutes'})
-        // try{
-        //     const {id} = req.params // planId past in params
-        //     const userId = req.user;
+        try{
+            const {id} = req.params // planId past in params
+            const userId = req.user;
 
-        //     const data = {
-        //         amount:  Number(DOMPurify.sanitize(req.body.amount)),
-        //     }
+            const data = {
+                amount:  Number(DOMPurify.sanitize(req.body.amount)),
+            }
 
-        //     // 3. get the user from user database
-        //     const user = await User.findOne({_id: userId})
+            // 3. get the user from user database
+            const user = await User.findOne({_id: userId})
 
-        //     // check item if exist
-        //     if(!mongoose.Types.ObjectId.isValid(id)){
-        //         return res.status(400).json({status: false, msg: "Plan not found"})
-        //     }
+            // check item if exist
+            if(!mongoose.Types.ObjectId.isValid(id)){
+                return res.status(400).json({status: false, msg: "Plan not found"})
+            }
 
-        //     // check if the plan exist
-        //     const plan = await InvestmentPlan.findOne({_id: id})
+            // check if the plan exist
+            const plan = await InvestmentPlan.findOne({_id: id})
 
-        //     if(!plan){
-        //         return res.status(400).json({status: false, msg: "Plan not found"})
-        //     }
+            if(!plan){
+                return res.status(400).json({status: false, msg: "Plan not found"})
+            }
 
-        //     // get currency from config data if exist otherwise set to the one in env
-        //     // get all config.
-        //     const config = await Config.find({});
+            // get currency from config data if exist otherwise set to the one in env
+            // get all config.
+            const config = await Config.find({});
 
-        //     const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
+            const currency = config && config.length >= 1 && config[0].nativeCurrency ? config[0].nativeCurrency : process.env.NATIVE_CURRENCY;
 
-        //     const masterPlanAmountLimit = config && config.length >= 1 && config[0].masterPlanAmountLimit ? Number(config[0].masterPlanAmountLimit) : Number(process.env.MASTER_PLAN_AMOUNT_LIMIT);
+            const masterPlanAmountLimit = config && config.length >= 1 && config[0].masterPlanAmountLimit ? Number(config[0].masterPlanAmountLimit) : Number(process.env.MASTER_PLAN_AMOUNT_LIMIT);
 
-        //     const referralBonusPercentage = config && config.length >= 1 && config[0].referralBonusPercentage? Number(config[0].referralBonusPercentage) : Number(process.env.REFERRAL_BONUS_PERCENTAGE);
+            const referralBonusPercentage = config && config.length >= 1 && config[0].referralBonusPercentage? Number(config[0].referralBonusPercentage) : Number(process.env.REFERRAL_BONUS_PERCENTAGE);
 
-        //     const referralBonusPercentageForMasterPlan = config && config.length >= 1 && config[0].referralBonusPercentageForMasterPlan? Number(config[0].referralBonusPercentageForMasterPlan) : Number(process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER);
+            const referralBonusPercentageForMasterPlan = config && config.length >= 1 && config[0].referralBonusPercentageForMasterPlan? Number(config[0].referralBonusPercentageForMasterPlan) : Number(process.env.REFERRAL_BONUS_PERCENTAGE_FOR_MASTER);
 
-        //     const referralBonusMaxCountForMasterPlan = (config && config.length >= 1 && config[0].referralBonusMaxCountForMasterPlan? Number(config[0].referralBonusMaxCountForMasterPlan) : Number(process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN))
+            const referralBonusMaxCountForMasterPlan = (config && config.length >= 1 && config[0].referralBonusMaxCountForMasterPlan? Number(config[0].referralBonusMaxCountForMasterPlan) : Number(process.env.REFERRAL_BONUS_MAX_COUNT_FOR_MASTER_PLAN))
 
-        //     // get all plans the user has
-        //     const userPlans = await Investment.find({userId}); // array
+            // get all plans the user has
+            const userPlans = await Investment.find({userId}); // array
 
-        //     let count = 0;
-        //     let samePlan = 0;
+            let count = 0;
+            let samePlan = 0;
 
-        //     // loop through all the investment the logged user has
-        //     for(let userPlan of userPlans){
+            // loop through all the investment the logged user has
+            for(let userPlan of userPlans){
 
-        //         // increament the count base on how many active investment he has running
-        //         if(userPlan.isActive){
-        //             ++count
-        //         }
+                // increament the count base on how many active investment he has running
+                if(userPlan.isActive){
+                    ++count
+                }
 
-        //         // check for active investment plans, if same with the plan he is requesting for currently, increament samePlan
-        //         if(userPlan.isActive && userPlan.type === plan.type){
-        //             ++samePlan
-        //         }
-        //     }
+                // check for active investment plans, if same with the plan he is requesting for currently, increament samePlan
+                if(userPlan.isActive && userPlan.type === plan.type){
+                    ++samePlan
+                }
+            }
 
-        //     const investmentLimits = config && config.length >= 1 && config[0].investmentLimits? config[0].investmentLimits : process.env.INVESTMENT_LIMITS;
+            const investmentLimits = config && config.length >= 1 && config[0].investmentLimits? config[0].investmentLimits : process.env.INVESTMENT_LIMITS;
 
-        //     // referral contest
+            // referral contest
 
-        //     const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
+            const startContestReg = config && config.length >= 1 && config[0].startContestReg? config[0].startContestReg : process.env.START_CONTEST_REG;
 
-        //     const allowReferralContest = config && config.length >= 1 && config[0].allowReferralContest? config[0].allowReferralContest : process.env.ALLOW_REFERRAL_CONTEST;
+            const allowReferralContest = config && config.length >= 1 && config[0].allowReferralContest? config[0].allowReferralContest : process.env.ALLOW_REFERRAL_CONTEST;
 
-        //     const referralContestStarts = config && config.length >= 1 && config[0].referralContestStarts
+            const referralContestStarts = config && config.length >= 1 && config[0].referralContestStarts
 
-        //     const referralContestStops = config && config.length >= 1 && config[0].referralContestStops
+            const referralContestStops = config && config.length >= 1 && config[0].referralContestStops
 
-        //     const currentTime = Date.now()
-        //     const startsAt = new Date(referralContestStarts).getTime()
-        //     const stopsAt = new Date(referralContestStops).getTime()
+            const currentTime = Date.now()
+            const startsAt = new Date(referralContestStarts).getTime()
+            const stopsAt = new Date(referralContestStops).getTime()
 
-        //     const allowContest = currentTime >= startsAt && currentTime <= stopsAt && allowReferralContest==='yes'
+            const allowContest = currentTime >= startsAt && currentTime <= stopsAt && allowReferralContest==='yes'
 
-        //     // const contestAllowed = currentTime >= startTime && currentTime - startTime <= referralContestDuration && allowReferralContest === 'yes'
+            // const contestAllowed = currentTime >= startTime && currentTime - startTime <= referralContestDuration && allowReferralContest === 'yes'
 
-        //     // if count is more than, refuse him of further investment
-        //     if(count >= investmentLimits){
-        //         return res.status(400).json({ status: false, msg: `You cannot have more than ${investmentLimits} active investments`})
-        //     }
-        //     else{
+            // if count is more than, refuse him of further investment
+            if(count >= investmentLimits){
+                return res.status(400).json({ status: false, msg: `You cannot have more than ${investmentLimits} active investments`})
+            }
+            else{
 
-        //         // no user should have same active plan for more than once
-        //         if(samePlan >= 1){
-        //             return res.status(400).json({ status: false, msg: "You have this plan running already"})
-        //         }
+                // no user should have same active plan for more than once
+                if(samePlan >= 1){
+                    return res.status(400).json({ status: false, msg: "You have this plan running already"})
+                }
 
-        //         else{
+                else{
 
-        //             // master plan investment, check if selected plan amount is equal to or more than the master plan amount limit from config database
-        //             if(plan.amount >= masterPlanAmountLimit){
+                    // master plan investment, check if selected plan amount is equal to or more than the master plan amount limit from config database
+                    if(plan.amount >= masterPlanAmountLimit){
 
-        //                 // validate data.amount
-        //                 if(!data.amount){
-        //                     return res.status(400).json({ status: false, msg: "All field is required"})
-        //                 }
+                        // validate data.amount
+                        if(!data.amount){
+                            return res.status(400).json({ status: false, msg: "All field is required"})
+                        }
 
-        //                 if(data.amount < masterPlanAmountLimit){
-        //                     return res.status(400).json({ status: false, msg: `Minimun amount for MASTER plan is ${masterPlanAmountLimit}`})
-        //                 }
+                        if(data.amount < masterPlanAmountLimit){
+                            return res.status(400).json({ status: false, msg: `Minimun amount for MASTER plan is ${masterPlanAmountLimit}`})
+                        }
 
-        //                 // check to makesure he does not invest more than his total account balance
-        //                 if(data.amount > user.amount){
-        //                     return res.status(400).json({ status: false, msg: "Insufficient balance"})
-        //                 }
+                        // check to makesure he does not invest more than his total account balance
+                        if(data.amount > user.amount){
+                            return res.status(400).json({ status: false, msg: "Insufficient balance"})
+                        }
 
-        //                 // get the amount
-        //                 const amount = Number(data.amount);
-        //                 // console.log(maturedInvestment.amount)
+                        // get the amount
+                        const amount = Number(data.amount);
+                        // console.log(maturedInvestment.amount)
         
-        //                 // get the investment returnPercentage
-        //                 const returnPercentage = Number(plan.returnPercentage)
+                        // get the investment returnPercentage
+                        const returnPercentage = Number(plan.returnPercentage)
         
-        //                 // calculate the reward
-        //                 const rewards = (( returnPercentage / 100) * amount) + amount;
+                        // calculate the reward
+                        const rewards = (( returnPercentage / 100) * amount) + amount;
 
-        //                 const newData = {
-        //                     type: plan.type,
-        //                     lifespan: plan.lifespan,
-        //                     returnPercentage: plan.returnPercentage,
-        //                     rewards,
-        //                     currentBalance: (user.amount - data.amount).toFixed(8),
-        //                     userId,
-        //                     amount: data.amount.toFixed(8), // amount from form input, not the plan amount since the user can invest with any amount of money equal to or more than the master plan if he chooses master plan
-        //                     currency,
-        //                 }
+                        const newData = {
+                            type: plan.type,
+                            lifespan: plan.lifespan,
+                            returnPercentage: plan.returnPercentage,
+                            rewards,
+                            currentBalance: (user.amount - data.amount).toFixed(8),
+                            userId,
+                            amount: data.amount.toFixed(8), // amount from form input, not the plan amount since the user can invest with any amount of money equal to or more than the master plan if he chooses master plan
+                            currency,
+                        }
     
-        //                 const newInvestment = new Investment(newData);
-        //                 await newInvestment.save();
+                        const newInvestment = new Investment(newData);
+                        await newInvestment.save();
 
-        //                 // Update the user database by removing this investment plan amount from their total account balance
-        //                 await User.findByIdAndUpdate({_id: userId}, {$set: {
-        //                     active: user.active + 1,
-        //                     amount: (user.amount - data.amount).toFixed(8)
-        //                 }})
+                        // Update the user database by removing this investment plan amount from their total account balance
+                        await User.findByIdAndUpdate({_id: userId}, {$set: {
+                            active: user.active + 1,
+                            amount: (user.amount - data.amount).toFixed(8)
+                        }})
     
-        //                 // check user if masterInvestmentCount is between 0 and referralBonusMaxCountForMasterPlan, if true, he can returns the referral bonus to his referrer, then increment the masterInvestmentCount (This is to make sure he only returns the referral bonus to his referrer gfor only referralBonusMaxCountForMasterPlan times of investment)
-        //                 if(user.masterInvestmentCount >= 0 && user.masterInvestmentCount < referralBonusMaxCountForMasterPlan){
+                        // check user if masterInvestmentCount is between 0 and referralBonusMaxCountForMasterPlan, if true, he can returns the referral bonus to his referrer, then increment the masterInvestmentCount (This is to make sure he only returns the referral bonus to his referrer gfor only referralBonusMaxCountForMasterPlan times of investment)
+                        if(user.masterInvestmentCount >= 0 && user.masterInvestmentCount < referralBonusMaxCountForMasterPlan){
 
-        //                     // check if user was referred by another user, then return their referral bonus to this referrer using their first investment (this is only for the first investment)
-        //                     if(user.referrerId){
+                            // check if user was referred by another user, then return their referral bonus to this referrer using their first investment (this is only for the first investment)
+                            if(user.referrerId){
 
-        //                         // get the referrerUser
-        //                         const referrerUser = await User.findOne({_id: user.referrerId})
+                                // get the referrerUser
+                                const referrerUser = await User.findOne({_id: user.referrerId})
                                 
-        //                         // calculate the referalBonus
-        //                         const referralBonus = referralBonusPercentageForMasterPlan / 100 * data.amount;
+                                // calculate the referalBonus
+                                const referralBonus = referralBonusPercentageForMasterPlan / 100 * data.amount;
 
-        //                         // update the referrer account balance with this referralBonus
-        //                         await User.findByIdAndUpdate({_id: user.referrerId}, {
-        //                             $set: {amount: (referrerUser.amount + referralBonus).toFixed(8)}
-        //                         })
+                                // update the referrer account balance with this referralBonus
+                                await User.findByIdAndUpdate({_id: user.referrerId}, {
+                                    $set: {amount: (referrerUser.amount + referralBonus).toFixed(8)}
+                                })
 
-        //                         // save new collection in the referralBonus database
-        //                         const newReferralBonus = new ReferralBonus({
-        //                             referrerId: user.referrerId,
-        //                             referreeId: userId,
-        //                             amount: referralBonus.toFixed(8),
-        //                             currency
-        //                         })
+                                // save new collection in the referralBonus database
+                                const newReferralBonus = new ReferralBonus({
+                                    referrerId: user.referrerId,
+                                    referreeId: userId,
+                                    amount: referralBonus.toFixed(8),
+                                    currency
+                                })
 
-        //                         await newReferralBonus.save();
+                                await newReferralBonus.save();
                                 
-        //                         //update the referral total bonus collection
-        //                         const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
-        //                         if(refData){
-        //                             await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
-        //                                 amount: refData.amount + referralBonus
-        //                             }})
-        //                         }
+                                //update the referral total bonus collection
+                                const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
+                                if(refData){
+                                    await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
+                                        amount: refData.amount + referralBonus
+                                    }})
+                                }
 
-        //                         // update the referral contest collection if allowContest is true
-        //                         if(allowContest){
-        //                             await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
-        //                                 point: plan.point,
-        //                             }}, {$set: {
-        //                                 currency
-        //                             }})
-        //                         }
+                                // update the referral contest collection if allowContest is true
+                                if(allowContest){
+                                    await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
+                                        point: plan.point,
+                                    }}, {$set: {
+                                        currency
+                                    }})
+                                }
                                 
-        //                     }
+                            }
 
-        //                     // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
-        //                     await User.findByIdAndUpdate({_id: userId}, {
-        //                         $set: {
-        //                             hasInvested: true,
-        //                             masterInvestmentCount: user.masterInvestmentCount + 1
-        //                         }
-        //                     })
-        //                 }
+                            // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
+                            await User.findByIdAndUpdate({_id: userId}, {
+                                $set: {
+                                    hasInvested: true,
+                                    masterInvestmentCount: user.masterInvestmentCount + 1
+                                }
+                            })
+                        }
                               
-        //                 const investmentData =  await Investment.findOne({_id: newInvestment.id})
+                        const investmentData =  await Investment.findOne({_id: newInvestment.id})
 
-        //                 return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: data.amount}})
-        //             }
+                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: data.amount}})
+                    }
 
-        //             else{
+                    else{
 
-        //                 // check to makesure he does not invest more than his total account balance
-        //                 if(plan.amount > user.amount){
-        //                     return res.status(400).json({ status: false, msg: "Insufficient balance"})
-        //                 }
+                        // check to makesure he does not invest more than his total account balance
+                        if(plan.amount > user.amount){
+                            return res.status(400).json({ status: false, msg: "Insufficient balance"})
+                        }
 
-        //                 // get the amount
-        //                 const amount = Number(plan.amount);
+                        // get the amount
+                        const amount = Number(plan.amount);
         
-        //                 // get the investment returnPercentage
-        //                 const returnPercentage = Number(plan.returnPercentage)
+                        // get the investment returnPercentage
+                        const returnPercentage = Number(plan.returnPercentage)
         
-        //                 // calculate the reward
-        //                 const rewards = (( returnPercentage / 100) * amount) + amount;
+                        // calculate the reward
+                        const rewards = (( returnPercentage / 100) * amount) + amount;
 
-        //                 const newData = {
-        //                     type: plan.type,
-        //                     lifespan: plan.lifespan,
-        //                     returnPercentage: plan.returnPercentage,
-        //                     rewards,
-        //                     userId,
-        //                     currentBalance: (user.amount - plan.amount).toFixed(8),
-        //                     amount: plan.amount.toFixed(8),
-        //                     currency,
-        //                 }
+                        const newData = {
+                            type: plan.type,
+                            lifespan: plan.lifespan,
+                            returnPercentage: plan.returnPercentage,
+                            rewards,
+                            userId,
+                            currentBalance: (user.amount - plan.amount).toFixed(8),
+                            amount: plan.amount.toFixed(8),
+                            currency,
+                        }
     
-        //                 const newInvestment = new Investment(newData);
-        //                 await newInvestment.save();
+                        const newInvestment = new Investment(newData);
+                        await newInvestment.save();
                         
                                                 
-        //                 // Update the user database by removing this investment plan amount from their total account balance
-        //                 await User.findByIdAndUpdate({_id: userId}, {$set: {
-        //                     active: user.active + 1,
-        //                     amount: (user.amount - plan.amount).toFixed(8),
-        //                 }});
+                        // Update the user database by removing this investment plan amount from their total account balance
+                        await User.findByIdAndUpdate({_id: userId}, {$set: {
+                            active: user.active + 1,
+                            amount: (user.amount - plan.amount).toFixed(8),
+                        }});
 
-        //                  // Check ths user collection in User adatabse to see if this is his/her first investment (hasInvested: false). This will make sure referral bonus is returned to referrer only once (first investment) for those that are someone else's referree
-        //                 if(!user.hasInvested){
+                         // Check ths user collection in User adatabse to see if this is his/her first investment (hasInvested: false). This will make sure referral bonus is returned to referrer only once (first investment) for those that are someone else's referree
+                        if(!user.hasInvested){
 
-        //                     // check if user was referred by another user, then return their referral bonus to this referrer using their first investment (this is only for the first investment)
-        //                     if(user.referrerId){
+                            // check if user was referred by another user, then return their referral bonus to this referrer using their first investment (this is only for the first investment)
+                            if(user.referrerId){
 
-        //                         // get the referrerUser
-        //                         const referrerUser = await User.findOne({_id: user.referrerId})
+                                // get the referrerUser
+                                const referrerUser = await User.findOne({_id: user.referrerId})
                                 
-        //                         // calculate the referalBonus
-        //                         const referralBonus = referralBonusPercentage / 100 * plan.amount;
+                                // calculate the referalBonus
+                                const referralBonus = referralBonusPercentage / 100 * plan.amount;
 
                                 
 
-        //                         // // update the referrer account balance with this referralBonus
-        //                         await User.findByIdAndUpdate({_id: user.referrerId}, {
-        //                             $set: {amount: (referrerUser.amount + referralBonus).toFixed(8)}
-        //                         })
+                                // // update the referrer account balance with this referralBonus
+                                await User.findByIdAndUpdate({_id: user.referrerId}, {
+                                    $set: {amount: (referrerUser.amount + referralBonus).toFixed(8)}
+                                })
                                 
-        //                         // save new collection in the referralBonus database
-        //                         const newReferralBonus = new ReferralBonus({
-        //                             referrerId: user.referrerId,
-        //                             referreeId: userId,
-        //                             amount: referralBonus.toFixed(8)
-        //                         })
+                                // save new collection in the referralBonus database
+                                const newReferralBonus = new ReferralBonus({
+                                    referrerId: user.referrerId,
+                                    referreeId: userId,
+                                    amount: referralBonus.toFixed(8)
+                                })
 
-        //                         await newReferralBonus.save()
+                                await newReferralBonus.save()
 
-        //                         // update the referral contest collection if allowContest is true
-        //                         if(allowContest){
-        //                             await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
-        //                                 point: plan.point,
-        //                             }}, {$set: {
-        //                                 currency
-        //                             }})
-        //                         }
+                                // update the referral contest collection if allowContest is true
+                                if(allowContest){
+                                    await Contest.findOneAndUpdate({userId: user.referrerId}, {$inc:{
+                                        point: plan.point,
+                                    }}, {$set: {
+                                        currency
+                                    }})
+                                }
                                             
-        //                         //update the referral total bonus collection
-        //                         const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
-        //                         if(refData){
-        //                             await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
-        //                                 amount: refData.amount + referralBonus
-        //                             }})
-        //                         }
+                                //update the referral total bonus collection
+                                const refData =  await ReferralTotalBonus.findOne({referreeId: userId})
+                                if(refData){
+                                    await ReferralTotalBonus.findOneAndUpdate({referreeId: userId}, {$set:{
+                                        amount: refData.amount + referralBonus
+                                    }})
+                                }
                                 
-        //                     }
+                            }
 
                             
-        //                     // update referree user and change hasInvested to true
-        //                     await User.findByIdAndUpdate({_id: userId}, {
-        //                         $set: {hasInvested: true}
-        //                     })
+                            // update referree user and change hasInvested to true
+                            await User.findByIdAndUpdate({_id: userId}, {
+                                $set: {hasInvested: true}
+                            })
 
-        //                     // if user has not invested for master prior invseting for non master, lock his chance of returning the master plan referral bonus to the referral
-        //                     if(user.masterInvestmentCount === 0){
+                            // if user has not invested for master prior invseting for non master, lock his chance of returning the master plan referral bonus to the referral
+                            if(user.masterInvestmentCount === 0){
 
-        //                         // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
-        //                         await User.findByIdAndUpdate({_id: userId}, {
-        //                             $set: {
-        //                                 masterInvestmentCount: referralBonusMaxCountForMasterPlan
-        //                             }
-        //                         })
-        //                     }
-        //                 }
+                                // update referree user and change hasInvested to true and increment masterInvestmentCount by 1
+                                await User.findByIdAndUpdate({_id: userId}, {
+                                    $set: {
+                                        masterInvestmentCount: referralBonusMaxCountForMasterPlan
+                                    }
+                                })
+                            }
+                        }
                         
-        //                 const investmentData = await Investment.findOne({_id: newInvestment.id});
+                        const investmentData = await Investment.findOne({_id: newInvestment.id});
 
-        //                 return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: plan.amount}})
-        //             }
-        //         }
-        //     }
-        // }
-        // catch(err){
-        //     return res.status(500).json({ status: false, msg: err.message})
-        // }
+                        return res.status(200).json({ status: true, msg: `You have started investment for ${plan.type}`, data: {data:investmentData, amount: plan.amount}})
+                    }
+                }
+            }
+        }
+        catch(err){
+            return res.status(500).json({ status: false, msg: err.message})
+        }
     },
 
     resolve: async (req, res)=> {
@@ -662,17 +661,16 @@ module.exports ={
 
                     if(users.active == 1 || users.active ==2){
                         // update the users account with the amount he invested with and the rewards
-                        // await User.findOneAndUpdate({_id: userId}, {$set: {
-                        //     active: users.active - 1,
-                        //     amount: Number(users.amount + maturedInvestment.rewards).toFixed(8)
-                        // }}, {new: true})
+                        await User.findOneAndUpdate({_id: userId}, {$set: {
+                            active: users.active - 1,
+                        }}, {new: true})
                     }
 
                     // update the investment database, 
                     await Investment.findOneAndUpdate({_id: maturedInvestment.id}, {$set: {
                         rewarded: true,
                         isActive: false,
-                        currentBalance: Number(users.amount + maturedInvestment.rewards).toFixed(8)
+                        // currentBalance: Number(users.amount + maturedInvestment.rewards).toFixed(8)
                     }}, {new: true});
 
                     //  update the users account with the amount he invested with and the rewards
@@ -695,34 +693,36 @@ module.exports ={
 
     resolveManually: async (req, res)=> {
         try{
-            return res.status(400).json({ status: falsse, msg: "check back in few minutes"}) 
-            // const {id} = req.params;
-            // // update the investment database, 
-            // const investment = await Investment.findOne({_id: id});
-            // // update the user
-            // const user = await User.findOne({_id: investment.userId})
+            const {id} = req.params;
+            // update the investment database, 
+            const investment = await Investment.findOne({_id: id});
+            // update the user
+            const user = await User.findOne({_id: investment.userId})
 
-            // if(investment.isActive){
-            //     await Investment.findOneAndUpdate({_id: id}, {$set: {
-            //         rewarded: true,
-            //         isActive: false,
-            //         currentBalance: (user.amount + investment.rewards).toFixed(8)
-            //     }}, {new: true})
+            if(investment.isActive){
+                await Investment.findOneAndUpdate({_id: id}, {$set: {
+                    rewarded: true,
+                    isActive: false,
+                    // currentBalance: (user.amount + investment.rewards).toFixed(8)
+                }}, {new: true})
+
+                await User.findOneAndUpdate({_id: investment.userId}, {$set: {
+                    amount: (user.amount + investment.rewards).toFixed(8)
+                }}, {new: true})
     
-            //     if(user.active == 1 || user.active ==2){
-            //         // update the users account with the amount he invested with and the rewards
-            //         await User.findOneAndUpdate({_id: investment.userId}, {$set: {
-            //             active: user.active - 1,
-            //             amount: (user.amount + investment.rewards).toFixed(8)
-            //         }}, {new: true})
-            //     }
-            //     const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
-            //     return res.status(200).json({ status: true, msg: "successful", data: investments})  
-            // }
-            // else{
-            //     const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
-            //     return res.status(200).json({ status: true, msg: "successful", data: investments}) 
-            // }
+                if(user.active == 1 || user.active == 2){
+                    // update the users account with the amount he invested with and the rewards
+                    await User.findOneAndUpdate({_id: investment.userId}, {$set: {
+                        active: user.active - 1,
+                    }}, {new: true})
+                }
+                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+                return res.status(200).json({ status: true, msg: "successful", data: investments})  
+            }
+            else{
+                const investments = await Investment.find({}).populate({path: 'userId', select: ['_id', 'email', 'amount', 'username']}).sort({createdAt: -1});
+                return res.status(200).json({ status: true, msg: "successful", data: investments}) 
+            }
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})
