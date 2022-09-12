@@ -15,9 +15,17 @@ const app = express();
 const server = http.createServer(app);
 const {Server} = require('socket.io')
 
-// const URL = process.env.MONGO_URL_DEV
-// const URL = process.env.MONGO_URL
-const URL = process.env.MONGO_URL_DOGITAL_OCEAN;
+const MODE = process.env.MODE;
+let URL;
+if(MODE === "test"){
+    URL = process.env.MONGO_URL
+}
+else if(MODE === "production"){
+    URL = process.env.MONGO_URL_DOGITAL_OCEAN;
+}
+else if(MODE === "local"){
+    URL = process.env.MONGO_URL_DEV
+}
 
 mongoose.connect(URL, {
     useNewUrlParser: true,
