@@ -862,7 +862,7 @@ module.exports = {
             for(let user of users){
                 const createdTime = new Date(user.createdAt).getTime() / 1000 // seconds
 
-                if(!user.isVerified && !user.isAdmin && currentTime - createdTime >= expiresIn){
+                if(!user.isVerified && currentTime - createdTime >= expiresIn){
                     ids.push(user._id.toString())
                 }
             }
