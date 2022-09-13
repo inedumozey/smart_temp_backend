@@ -48,7 +48,7 @@ module.exports ={
                     resolved: false
                 }}, {new: true});
     
-                const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree']}).sort({point: -1, updatedAt: 1});
+                const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'amount', 'referree']}).sort({point: -1, updatedAt: 1});
                 return res.status(200).json({ status: true, msg: "Reseted Successfully", data})
             }
         }
@@ -85,7 +85,7 @@ module.exports ={
             }
 
             else if(contestIsOn){
-                return res.status(400).json({ status: false, msg: "Contest is till on going, try again later"})
+                return res.status(400).json({ status: false, msg: "Contest is still on going, try again later"})
             }
             
             else{
@@ -128,7 +128,6 @@ module.exports ={
         }
     },
 
-
     removeUser: async (req, res)=> {
         try{
             const {id} = req.params;
@@ -138,10 +137,11 @@ module.exports ={
             await Contest.findOneAndDelete({_id: id});
 
             const data = await Contest.find({}).populate({path: 'userId', select: ['_id', 'email', 'username', 'referree', 'amount']}).sort({point: -1, updatedAt: 1});
-            return res.status(200).json({ status: true, msg: "successful", data})
+
+            return res.status(200).json({ status: true, msg: "Removed Successfully", data})
         }
         catch(err){
             return res.status(500).json({ status: false, msg: err.message})
         }
-    },    
+    },
 }
