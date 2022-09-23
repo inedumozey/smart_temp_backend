@@ -102,7 +102,6 @@ module.exports ={
                 lifespan: data.lifespan,
                 returnPercentage: data.returnPercentage,
                 point: data.point,
-                pointRewards: data.pointRewards,
             })
 
             await newInvestmentPlan.save();
@@ -111,7 +110,7 @@ module.exports ={
                     
         }
         catch(err){
-            return res.status(500).json({ status: false, msg: "Server error, please contact customer support"})
+            return res.status(500).json({ status: false, msg: err.message})
         }
     },
 
@@ -187,7 +186,6 @@ module.exports ={
                 lifespan: data.lifespan,
                 returnPercentage: data.returnPercentage,
                 point: data.point,
-                pointRewards: data.pointRewards,
             }
             const updatedData = await InvestmentPlan.findByIdAndUpdate({_id: id}, {$set: planData}, {new: true});
 
@@ -659,20 +657,20 @@ module.exports ={
                     const users = await User.findOne({_id: userId})
 
                     await User.updateMany({_id: userId}, {$set: {
-                        amount: (users.amount + maturedInvestment.rewards).toFixed(8)
+                        amount: users && (users.amount + maturedInvestment.rewards).toFixed(8)
                     }}, {new: true})
 
                     // update the investment database, 
                     await Investment.updateMany({_id: maturedInvestment.id}, {$set: {
                         rewarded: true,
                         isActive: false,
-                        currentBalance: (users.amount + maturedInvestment.rewards).toFixed(8)
+                        currentBalance: users && (users.amount + maturedInvestment.rewards).toFixed(8)
                     }}, {new: true})
 
-                    if(users.active == 1 || users.active ==2){
+                    if(users && (users.active == 1 || users.active ==2)){
                         // update the users account with the amount he invested with and the rewards
                         await User.updateMany({_id: userId}, {$set: {
-                            active: users.active - 1,
+                            active: users && users.active - 1,
                         }}, {new: true})
                     }
                                         
@@ -680,7 +678,8 @@ module.exports ={
 
                 return res.status(200).json({ status: true, msg: "successful"})  
 
-            }else{
+            }
+            else{
                 return res.status(200).json({ status: true, msg: "successful"})  
             }
 

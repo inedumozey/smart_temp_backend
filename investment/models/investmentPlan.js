@@ -36,7 +36,6 @@ const schema = new mongoose.Schema(
         },
         pointRewards: {
             type: Number,
-            required: true,
             trim: true
         },
     },
